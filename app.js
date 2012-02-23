@@ -40,9 +40,17 @@ app.configure(function(){
   app.set('view options', { pretty: true });
   app.use(express.logger(':method :url :status'));
   app.use(express.bodyParser());
+  app.use(express.cookieParser());
+
+  // Set up temporary memory store for sessions
+  var MemStore = express.session.MemoryStore;
+  sessionStore = new MemStore({ reapInterval: 60000 * 10 });
+  app.use(express.session({secret: "O09zC8#KgUZFyBad", store: sessionStore, key: "mfb"}));
+
   app.use(express.methodOverride());
   app.use(app.router);
-  app.use(express['static'](__dirname + '/public'));
+  app.use(express.static(__dirname + '/public'));
+
   app.dynamicHelpers({
     isDevMode: function (req, res) {
       return (process.env.NODE_ENV || 'development') === 'development';
