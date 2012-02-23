@@ -37,6 +37,7 @@ app.configure('production', function(){
 app.configure(function(){
   app.set('views', __dirname + '/views/');
   app.set('view engine', viewEngine);
+  app.set('view options', { pretty: true });
   app.use(express.logger(':method :url :status'));
   app.use(express.bodyParser());
   app.use(express.methodOverride());
