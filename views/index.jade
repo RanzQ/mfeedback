@@ -4,9 +4,11 @@ p Welcome to #{title}
 
 // page
 
-div(data-role='page')
+div(data-role='page', id="#start-page", data-theme='a')
   div(data-role='header')
-    h1= title
+    h1
+      span(class='aalto-logo')
+      = title
 
   // content
 

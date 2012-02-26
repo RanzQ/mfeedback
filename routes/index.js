@@ -4,5 +4,5 @@
  */
 
 exports.index = function(req, res){
-  res.render('index', { title: 'Mobile Feedback for Aalto Courses' })
+  res.render('index', { title: 'Mobile Feedback' })
 };
