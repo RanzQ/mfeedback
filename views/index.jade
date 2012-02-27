@@ -7,10 +7,11 @@ html
     link(rel='stylesheet', href='/stylesheets/mfeedback-mobile.min.css')
     link(rel='stylesheet', href='http://code.jquery.com/mobile/1.0.1/jquery.mobile.structure-1.0.1.min.css')
     link(rel='stylesheet', href='/stylesheets/style.css')
+
     script(type='text/javascript', src='http://code.jquery.com/jquery-1.6.4.min.js')
-    script(type='text/javascript', src='http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js')
     script(type='text/javascript', src='/javascripts/common.js')
     script(type='text/javascript', src='/javascripts/index.js')
+    script(type='text/javascript', src='http://code.jquery.com/mobile/1.0/jquery.mobile-1.0.min.js')
 
   body
 
@@ -29,8 +30,9 @@ html
         h2 Welcome to #{title}
 
         ul(data-role='listview', data-filter='true', data-inset='true')
+          li(data-role='list-divider') Select course
           li
-            a(href='#course-page')
+            a(href='#course-page', class='course-button')
               span(class='course-code') T-76.1143
               span(class='course-title') Tiedonhallintajärjestelmät
           li
