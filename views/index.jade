@@ -1,20 +1,177 @@
-h1= title
-p Welcome to #{title}
+!!! 5
+html
+  head
+    title= title
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    link(rel='stylesheet', href='/stylesheets/mfeedback-mobile.min.css')
+    link(rel='stylesheet', href='http://code.jquery.com/mobile/1.0.1/jquery.mobile.structure-1.0.1.min.css')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    script(type='text/javascript', src='http://code.jquery.com/jquery-1.6.4.min.js')
+    script(type='text/javascript', src='http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js')
+    script(type='text/javascript', src='/javascripts/common.js')
+    script(type='text/javascript', src='/javascripts/index.js')
+
+  body
+
+    // Start of index page
+
+    div(data-role='page', id="#start-page", data-theme='a')
+      div(data-role='header')
+        h1
+          span(class='aalto-logo')
+          span= title
+        a(href='#', data-role='button', data-icon='home', data-iconpos='notext', data-direction='reverse') Home
+        a(href='#', data-role='button', data-icon='arrow-r', data-iconpos='right') Login
 
 
-// page
+      div(data-role='content')
+        h2 Welcome to #{title}
 
-div(data-role='page', id="#start-page", data-theme='a')
-  div(data-role='header')
-    h1
-      span(class='aalto-logo')
-      = title
+        ul(data-role='listview', data-filter='true', data-inset='true')
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.1143
+              span(class='course-title') Tiedonhallintajärjestelmät
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.3601
+              span(class='course-title') Introduction to Software Engineering
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.4115
+              span(class='course-title') Software Development Project I
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.4602
+              span(class='course-title') Software Development Methods
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5050
+              span(class='course-title') Methods for Software Engineering and Business Research P
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5115
+              span(class='course-title') Software Development Project II
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5150
+              span(class='course-title') Software Architectures P
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5158
+              span(class='course-title') Ohjelmistotuotannon erikoistyö L
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5612
+              span(class='course-title') Software Project Management P
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5613
+              span(class='course-title') Software Testing and Quality Assurance P
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5615
+              span(class='course-title') Requirements Engineering P
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5631
+              span(class='course-title') Software processes P
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5632
+              span(class='course-title') Tietotekniikkaoikeus L
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5633
+              span(class='course-title') Ohjelmistotuotannon erikoiskurssi L
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5650
+              span(class='course-title') Seminar in Software Engineering P
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5654
+              span(class='course-title') Seminar on Software Product Development P
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5655
+              span(class='course-title') Ohjelmistotuotannon tutkimusseminaari L
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5699
+              span(class='course-title') Ohjelmistotuotannon yksilölliset opinnot L
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5750
+              span(class='course-title') Tietotekniikkaoikeuden seminaari L
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5751
+              span(class='course-title') Tietotekniikkaoikeuden erikoistyö L
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5753
+              span(class='course-title') Law in Network Society
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5754
+              span(class='course-title') Teknologiaoikeuden kirjatentti 1 L
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5758
+              span(class='course-title') Law and Technology - book examination 2 P
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5759
+              span(class='course-title') Tietotekniikkaoikeuden yksilölliset opinnot L
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5762
+              span(class='course-title') Legal Aspects of Service Management P
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5764
+              span(class='course-title') Faktat ja tietoyhteiskuntaviestintä
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.5900
+              span(class='course-title') Software Engineering Learning Portfolio
+          li
+            a(href='#course-page')
+              span(class='course-code') T-76.7656
+              span(class='course-title') Doctoral Seminar P
 
-  // content
+      // /content
 
-  div(data-role='content')
-    p Welcome to #{title}
+    // End of index page
 
-  // /content
+    // Start of course page
 
-// /page
+    div(data-role='page', id='#course-page', data-theme='a')
+      div(data-role='header')
+        h1
+          span(class='aalto-logo')
+          span= title
+        a(href='#', data-role='button', data-icon='home', data-iconpos='notext', data-direction='reverse') Home
+        a(href='#', data-role='button', data-icon='arrow-r', data-iconpos='right') Login
+
+
+      div(data-role='content')
+
+        a(href='#', data-role='button', data-icon='arrow-r', data-iconpos='right') Course feedback
+    
+        div(data-role='collapsible-set')
+          div(data-role='collapsible')
+            h3 Lectures
+            p List of lectures would be here.
+          div(data-role='collapsible')
+            h3 Assignments
+            p List of assignments would be here.
+          div(data-role='collapsible')
+            h3 Exams
+            p List of exams would be here.
+
+      // /content
+
+    // End of index page
