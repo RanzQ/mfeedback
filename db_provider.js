@@ -141,6 +141,16 @@ app.getCourses = function(callback) {
   });
 }
 
+app.getCourse = function(id, callback) {
+  this.getCourseCollection(function(error, course_collection) {
+    if (error) { callback(error); return; }
+    course_collection.findOne({'id': id}, function(error, result) {
+      if (error) { callback(error); return; }
+      callback(null, result);
+    });
+  });
+}
+
 /**
  *
  *

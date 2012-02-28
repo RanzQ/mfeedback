@@ -106,13 +106,12 @@ server._setupRoutes = function() {
 
     app.get('/course/:id', function(req, res){
       var id = req.params.id.toLowerCase();
-      db.getCourseById(id, function(error, course) {
+      db.getCourse(id, function(error, course) {
         if(error || !course) {
           res.send(res_404, 404);
         } else { 
-          res.render('course', {
-            id: course.id,
-            title: course.title
+          res.partial('course', {
+            title: course.id.toUpperCase() + ' - ' + course.title 
           });
         }
       });
