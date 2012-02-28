@@ -1,19 +1,24 @@
-// Start of index page
-div(data-role='page', id="index-page", data-theme='a')
-  include includes/header
+extends layout
 
-  div(data-role='content')
-    h2 Welcome to #{title}
+append scripts
+  script(type='text/javascript', src='/javascripts/index.js')
 
-    ul(data-role='listview', data-filter='true', data-inset='true')
-      li(data-role='list-divider') Select course
-      - each course in courses
-        li
-          a(href="course/" + course.id)
-            span(class='course-id')= course.id.toUpperCase()
-            span(class='course-title')= course.title
+block page
+  // Start of index page
+  div(data-role='page', id="index-page", data-theme='a')
+    include header
 
+    div(data-role='content')
+      h2 Welcome to #{title}
 
-  // /content
+      ul(data-role='listview', data-filter='true', data-inset='true')
+        li(data-role='list-divider') Select course
+        - each course in courses
+          li
+            a(href="course/" + course.id)
+              span(class='course-id')= course.id.toUpperCase()
+              span(class='course-title')= course.title
+              
+    // /content
 
-// End of index page
+  // End of index page

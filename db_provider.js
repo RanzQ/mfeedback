@@ -46,7 +46,7 @@ function DatabaseProvider(dbName, host, port) {
                         console.log(error); 
                         return;
                     }
-                    db.ensureIndex(collection.collectionName, 'id', function(error, indexName) {
+                    collection.ensureIndex({'id':1}, {'unique':true}, function(error, indexName) {
                         if (error) {
                             console.log(error); 
                             return; 
@@ -124,8 +124,8 @@ app.addCourse = function(course, callback) {
     if (error) { callback(error); return; }
     course_collection.insert(
       { 'id':course.id, 'title':course.title },
-      function(error, doc) {                 
-        callback(null, doc);
+      function(error, doc) {
+        error ? callback(error) : callback(null, doc);
       }
     );       
   });

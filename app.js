@@ -8,6 +8,9 @@ var exports = module.exports;
 
 var db = new DatabaseProvider('node-mongo-mfeedback', 'localhost', 27017);
 
+process.env['AWS_ACCESS_KEY_ID'] = '<ID>';
+process.env['AWS_SECRET_ACCESS_KEY'] = '<KEY>';
+
 // Add some dummydata
 
 var courseCollection = [
@@ -42,7 +45,7 @@ var courseCollection = [
 
 setTimeout(function() { 
   for (var i = 0; i < courseCollection.length; ++i) {
-    db.addCourse(courseCollection[i], function(error, result) { console.log(result); });
+    db.addCourse(courseCollection[i], function(error, result) { if(error) console.log(error); });
   }
 }, 2000);
 
