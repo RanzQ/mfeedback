@@ -55,7 +55,7 @@ server._configure = function() {
   app.configure(function(){
     app.set('views', __dirname + '/views/');
     app.set('view engine', viewEngine);
-    app.set('view options', { pretty: true });
+    app.set('view options', { pretty: true, layout: false });
     app.use(express.logger(':method :url :status'));
     app.use(express.bodyParser());
     app.use(express.cookieParser());
@@ -96,7 +96,6 @@ server._setupRoutes = function() {
             title: 'Mobile Feedback',
             courses: courses
           });
-          console.log(courses);
         }
       });
     });

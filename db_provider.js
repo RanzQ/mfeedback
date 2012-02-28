@@ -116,8 +116,8 @@ app.getCourseCollection = function(callback) {
 /**
  * Add a new course
  * 
- *      @param {String} id - id of the course
- *      @param {String} title - title of the course
+ *      @param {String} course.id - id of the course
+ *      @param {String} course.title - title of the course
  */
 app.addCourse = function(course, callback) {
   this.getCourseCollection(function(error, course_collection) {

@@ -40,9 +40,11 @@ var courseCollection = [
   {'id':'t-76.5900', 'title':'Software Engineering Learning Portfolio'},
   {'id':'t-76.7656', 'title':'Doctoral Seminar P'} ];
 
-for (var i = 0; i < courseCollection.length; ++i) {
-  db.addCourse(courseCollection[i], function(error, result) { console.log(result); });
-}
+setTimeout(function() { 
+  for (var i = 0; i < courseCollection.length; ++i) {
+    db.addCourse(courseCollection[i], function(error, result) { console.log(result); });
+  }
+}, 2000);
 
 // Initialize the express server
 var server = new Server(db);

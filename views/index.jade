@@ -1,13 +1,6 @@
-
 // Start of index page
-div(data-role='page', id="start-page", data-theme='a')
-  div(data-role='header')
-    h1
-      span(class='aalto-logo')
-      span= title
-    a(href='#', data-role='button', data-icon='home', data-iconpos='notext', data-direction='reverse') Home
-    a(href='#', data-role='button', data-icon='arrow-r', data-iconpos='right') Login
-
+div(data-role='page', id="index-page", data-theme='a')
+  include includes/header
 
   div(data-role='content')
     h2 Welcome to #{title}
@@ -16,42 +9,10 @@ div(data-role='page', id="start-page", data-theme='a')
       li(data-role='list-divider') Select course
       - each course in courses
         li
-          a(href="#")
-            span(class='course-id')= course.id
+          a(href="course/" + course.id)
+            span(class='course-id')= course.id.toUpperCase()
             span(class='course-title')= course.title
 
-
-  // /content
-
-// End of index page
-
-// Start of course page
-
-div(data-role='page', id='course-page', data-theme='a')
-  div(data-role='header')
-    h1
-      span(class='aalto-logo')
-      span= title
-    a(href='#', data-role='button', data-icon='home', data-iconpos='notext', data-direction='reverse') Home
-    a(href='#', data-role='button', data-icon='arrow-r', data-iconpos='right') Login
-
-
-  div(data-role='content')
-
-    ul(data-role='listview', data-inset='true')
-      li
-        a(href='#course-feedback') Course feedback
-
-    div(data-role='collapsible-set')
-      div(data-role='collapsible')
-        h3 Lectures
-        p List of lectures would be here.
-      div(data-role='collapsible')
-        h3 Assignments
-        p List of assignments would be here.
-      div(data-role='collapsible')
-        h3 Exams
-        p List of exams would be here.
 
   // /content
 
