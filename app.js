@@ -43,11 +43,19 @@ var courseCollection = [
   {'id':'t-76.5900', 'title':'Software Engineering Learning Portfolio'},
   {'id':'t-76.7656', 'title':'Doctoral Seminar P'} ];
 
-setTimeout(function() { 
+var testLectures = [
+  {'number':'1', 'title':'First lecture', 'date':'1.1.2012'},
+  {'number':'2', 'title':'Second lecture', 'date':'2.2.2012'},
+  {'number':'3', 'title':'Third lecture', 'date':'3.3.2012'} ];
+
+/*setTimeout(function() { 
   for (var i = 0; i < courseCollection.length; ++i) {
     db.addCourse(courseCollection[i], function(error, result) { if(error) console.log(error); });
+    for (var j = 0; j < testLectures.length; ++j) {
+      db.addLecture(courseCollection[i].id, testLectures[j]);
+    }
   }
-}, 2000);
+}, 2000);*/
 
 // Initialize the express server
 var server = new Server(db);

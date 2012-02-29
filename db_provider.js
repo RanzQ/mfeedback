@@ -41,7 +41,7 @@ function DatabaseProvider(dbName, host, port) {
                     console.log("Collection 'courses' already exists. Skipping its creation..."); 
                     return;
                 }
-                db.createCollection('courses', {capped:true, size:100000, autoIndexId:true}, function(error, collection) {
+                db.createCollection('courses', {autoIndexId:true}, function(error, collection) {
                     if (error) { 
                         console.log(error); 
                         return;
@@ -56,31 +56,29 @@ function DatabaseProvider(dbName, host, port) {
                     });        
                 });
             });
-            /*
-            namespace_collection.find({'name': dbName + '.lectures'}).toArray(function(error, result) {
+            namespace_collection.find({'name': dbName + '.feedback'}).toArray(function(error, result) {
                 if(error) {
                     console.log(error); 
                     return;
                 } else if (result.length !== 0) { 
-                    console.log('Collection lectures already exists. Skipping its creation... '); 
+                    console.log("Collection 'feedback' already exists. Skipping its creation..."); 
                     return;
                 }
-                db.createCollection('lectures', function(error, collection) {
+                db.createCollection('feedback', {autoIndexId:true}, function(error, collection) {
                     if (error) { 
                         console.log(error); 
                         return;
                     }
-                    db.ensureIndex(collection.collectionName, 'lid', function(error, indexName) {
+                    collection.ensureIndex({'courseId':1}, {'targetId':1}, function(error, indexName) {
                         if (error) {
                             console.log(error); 
                             return; 
                         }
                         console.log("Index added for " + indexName);
-                        console.log("Collection 'lectures' created... I think");
-                    });    
+                        console.log("Collection 'feedback' created.");
+                    });        
                 });
-            });  
-            */    
+            }); 
         });    
     });
 };
@@ -150,6 +148,26 @@ app.getCourse = function(id, callback) {
     });
   });
 }
+
+/**
+ * Add a new lecture
+ * 
+ *      @param {String} courseId - id of the course
+ *      @param {Object} lecture - lecture to add
+ */
+app.addLecture = function(courseId, lecture, callback) {
+  this.getCourseCollection(function(error, course_collection) {
+    if (error) { callback(error); return; }
+    course_collection.update( { 'id' : courseId }
+                            , { '$push' : { 'lectures' : { 'number': lecture.number
+                                                         , 'title':  lecture.title
+                                                         , 'date':   lecture.date } }
+    }), function(error, doc) {
+      error ? callback(error) : callback(null, doc);
+    }   
+  });
+}
+
 
 /**
  *

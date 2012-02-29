@@ -1,0 +1,27 @@
+// Start of course page
+div(data-role='page', id='course-page', data-theme='a')
+
+  include header
+
+  div(data-role='content')
+
+    ul(data-role='listview', data-inset='true')
+      li
+        a(href='#course-feedback') Course feedback
+
+    div(data-role='collapsible-set', data-content-theme='b')
+      div(data-role='collapsible')
+        h3 Lectures
+        ul(data-role='listview', data-inset='true')
+          - each lecture in lectures
+            li: a(href='lecture#{lecture.number}') Lecture #{lecture.number}: #{lecture.title}
+      div(data-role='collapsible')
+        h3 Assignments
+        p List of assignments would be here.
+      div(data-role='collapsible')
+        h3 Exams
+        p List of exams would be here.
+
+  // /content
+
+// End of index page

@@ -1,25 +1,4 @@
-// Start of course page
-div(data-role='page', id='course-page', data-theme='a')
+extends layout
 
-  include header
-
-  div(data-role='content')
-
-    ul(data-role='listview', data-inset='true')
-      li
-        a(href='#course-feedback') Course feedback
-
-    div(data-role='collapsible-set')
-      div(data-role='collapsible')
-        h3 Lectures
-        p List of lectures would be here.
-      div(data-role='collapsible')
-        h3 Assignments
-        p List of assignments would be here.
-      div(data-role='collapsible')
-        h3 Exams
-        p List of exams would be here.
-
-  // /content
-
-// End of index page
+block page
+  include partials/course_page

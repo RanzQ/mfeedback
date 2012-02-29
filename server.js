@@ -93,10 +93,15 @@ server._setupRoutes = function() {
         if(error || !courses) {
           res.send(res_404, 404);
         } else { 
-          res.render('index', {
+          var context = {
             title: 'Mobile Feedback',
             courses: courses
-          });
+          };
+          if (req.xhr) {
+            res.partial('partials/index_page', context);
+          } else {
+            res.render('index', context);
+          }
         }
       });
     });
@@ -111,9 +116,14 @@ server._setupRoutes = function() {
         if(error || !course) {
           res.send(res_404, 404);
         } else { 
-          res.partial('course', {
-            title: course.id.toUpperCase() + ' - ' + course.title 
-          });
+          var context = { title: course.id.toUpperCase() + ' - ' + course.title,
+                          lectures: course.lectures
+          };
+          if (req.xhr) {
+            res.partial('partials/course_page', context);
+          } else {
+            res.render('course', context);
+          }
         }
       });
     });
