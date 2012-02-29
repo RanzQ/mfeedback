@@ -6,7 +6,8 @@ var express = require('express')
   , viewEngine = 'jade'
   , stylus = require('stylus')
   , nib = require('nib')
-  , mongoStore = require('connect-mongo');
+  , mongoStore = require('connect-mongo')
+  , i18n = require("i18n");
 
 var exports = module.exports = Server;
 
