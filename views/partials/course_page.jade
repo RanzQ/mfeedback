@@ -14,13 +14,17 @@ div(data-role='page', id='course-page', data-theme='a')
         h3 Lectures
         ul(data-role='listview', data-inset='true')
           - each lecture in lectures
-            li: a(href='lecture#{lecture.number}') Lecture #{lecture.number}: #{lecture.title}
+            li: a(href='/course/#{id}/lecture/#{lecture.number}') Lecture #{lecture.number}: #{lecture.title}
       div(data-role='collapsible')
         h3 Assignments
-        p List of assignments would be here.
+        ul(data-role='listview', data-inset='true')
+          - each assignment in assignments
+            li: a(href='/course/#{id}/assignment/#{assignment.number}') Assignment #{assignment.number}: #{assignment.title}
       div(data-role='collapsible')
         h3 Exams
-        p List of exams would be here.
+        ul(data-role='listview', data-inset='true')
+          - each exam in exams
+            li: a(href='/course/#{id}/exam/#{exam.date}') Exam #{exam.date}
 
   // /content
 

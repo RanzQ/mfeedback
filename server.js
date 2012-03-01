@@ -116,13 +116,121 @@ server._setupRoutes = function() {
         if(error || !course) {
           res.send(res_404, 404);
         } else { 
-          var context = { title: course.id.toUpperCase() + ' - ' + course.title,
-                          lectures: course.lectures
+          var context = {
+            title: course.id.toUpperCase() + ' - ' + course.title,
+            id: course.id,
+            lectures: course.lectures,
+            assignments: course.assignments,
+            exams: course.exams
           };
           if (req.xhr) {
             res.partial('partials/course_page', context);
           } else {
             res.render('course', context);
+          }
+        }
+      });
+    });
+
+    /*
+     * GET lecture feedback page.
+     */
+
+    app.get('/course/:id/lecture/:number', function(req, res){
+      var id = req.params.id.toLowerCase()
+        , number = req.params.number.toLowerCase();
+
+      db.getCourse(id, function(error, course) {
+        if(error || !course) {
+          res.send(res_404, 404);
+        } else { 
+          var lecture = null
+            , l;
+          for (l in course.lectures) {
+            if (number == l.number) lecture = l;
+          }
+          if(!lecture) {
+            res.send(res_404, 404);
+          } 
+          var context = {
+            title: course.id.toUpperCase() + ' - Lecture ' + lecture.number,
+            lecture: lecture
+          };
+          if (req.xhr) {
+            res.partial('partials/feedback_page', context);
+          } else {
+            res.render('feedback', context);
+          }
+        }
+      });
+    });
+
+    /*
+     * GET assignment feedback page.
+     */
+
+    app.get('/course/:id/assignment/:number', function(req, res){
+      var id = req.params.id.toLowerCase()
+        , number = req.params.number.toLowerCase();
+
+      db.getCourse(id, function(error, course) {
+        if(error || !course) {
+          res.send(res_404, 404);
+        } else { 
+          var assignment = null
+            , a;
+          for (a in course.assignments) {
+            if (number === a.number) assignment = a;
+          }
+          if(!assignment) {
+            res.send(res_404, 404);
+          } 
+          var context = {
+            title: course.id.toUpperCase() + ' - Assignment ' + assignment.number,
+            assignment: assignment
+          };
+          if (req.xhr) {
+            res.partial('partials/feedback_page', context);
+          } else {
+            res.render('feedback', context);
+          }
+        }
+      });
+    });
+
+    /*
+     * GET exam feedback page.
+     */
+
+    app.get('/course/:id/exam/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res){
+      var id = req.params.id.toLowerCase()
+        , y = year 
+        , m = month
+        , d = day
+        , date = new Date();
+
+      date.setFullYear(y,m-1,d);
+
+      db.getCourse(id, function(error, course) {
+        if(error || !course) {
+          res.send(res_404, 404);
+        } else { 
+          var exam = null 
+            , e;
+          for (e in course.exams) {
+            if (date == e.date) exam = e;
+          }
+          if(!exam) {
+            res.send(res_404, 404);
+          } 
+          var context = {
+            title: course.id.toUpperCase() + ' - Exam ' + exam.date,
+            exam: exam
+          };
+          if (req.xhr) {
+            res.partial('partials/feedback_page', context);
+          } else {
+            res.render('feedback', context);
           }
         }
       });

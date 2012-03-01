@@ -43,19 +43,43 @@ var courseCollection = [
   {'id':'t-76.5900', 'title':'Software Engineering Learning Portfolio'},
   {'id':'t-76.7656', 'title':'Doctoral Seminar P'} ];
 
-var testLectures = [
-  {'number':'1', 'title':'First lecture', 'date':'1.1.2012'},
-  {'number':'2', 'title':'Second lecture', 'date':'2.2.2012'},
-  {'number':'3', 'title':'Third lecture', 'date':'3.3.2012'} ];
+var testDate = new Date()
+  , testDate2 = new Date()
+  , testDate3 = new Date();
 
-/*setTimeout(function() { 
+testDate.setFullYear(2012, 1, 1);
+testDate2.setFullYear(2012, 2, 2);
+testDate3.setFullYear(2012, 3, 3);
+
+var testLectures = [
+  {'number':'1', 'title':'First lecture', 'date':testDate},
+  {'number':'2', 'title':'Second lecture', 'date':testDate2},
+  {'number':'3', 'title':'Third lecture', 'date':testDate3} ];
+
+var testAssignments = [
+  {'number':'1', 'title':'First assignment', 'date':testDate},
+  {'number':'2', 'title':'Second assignment', 'date':testDate2},
+  {'number':'3', 'title':'Third assignment', 'date':testDate3} ];
+
+var testExams = [
+  {'date':testDate},
+  {'date':testDate2},
+  {'date':testDate3} ];
+
+/*
+setTimeout(function() { 
   for (var i = 0; i < courseCollection.length; ++i) {
-    db.addCourse(courseCollection[i], function(error, result) { if(error) console.log(error); });
-    for (var j = 0; j < testLectures.length; ++j) {
-      db.addLecture(courseCollection[i].id, testLectures[j]);
-    }
+    db.addCourse(courseCollection[i], function(error, result) { 
+      if(error) console.log(error); 
+      for (var j = 0; j < testLectures.length; ++j) {
+        db.addLecture(courseCollection[i].id, testLectures[j], function(error, result) { if(error) console.log(error); });
+        db.addAssignment(courseCollection[i].id, testAssignments[j], function(error, result) { if(error) console.log(error); });
+        db.addExam(courseCollection[i].id, testExams[j], function(error, result) { if(error) console.log(error); });
+      }
+    });
   }
-}, 2000);*/
+}, 2000);
+*/
 
 // Initialize the express server
 var server = new Server(db);

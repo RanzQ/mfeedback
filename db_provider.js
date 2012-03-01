@@ -150,7 +150,7 @@ app.getCourse = function(id, callback) {
 }
 
 /**
- * Add a new lecture
+ * Add a lecture
  * 
  *      @param {String} courseId - id of the course
  *      @param {Object} lecture - lecture to add
@@ -158,15 +158,70 @@ app.getCourse = function(id, callback) {
 app.addLecture = function(courseId, lecture, callback) {
   this.getCourseCollection(function(error, course_collection) {
     if (error) { callback(error); return; }
-    course_collection.update( { 'id' : courseId }
-                            , { '$push' : { 'lectures' : { 'number': lecture.number
-                                                         , 'title':  lecture.title
-                                                         , 'date':   lecture.date } }
+    course_collection.update( {
+      'id' : courseId
+    }, {
+      '$push' : {
+        'lectures' : {
+          'number': lecture.number,
+          'title':  lecture.title,
+          'date':   lecture.date
+        }
+      }
     }), function(error, doc) {
       error ? callback(error) : callback(null, doc);
     }   
   });
 }
+
+/**
+ * Add an assignment
+ * 
+ *      @param {String} courseId - id of the course
+ *      @param {Object} assignment - assignment to add
+ */
+app.addAssignment = function(courseId, assignment, callback) {
+  this.getCourseCollection(function(error, course_collection) {
+    if (error) { callback(error); return; }
+    course_collection.update( {
+      'id' : courseId
+    }, {
+      '$push' : {
+        'assignments' : {
+          'number': assignment.number,
+          'title':  assignment.title,
+          'date':   assignment.date
+        }
+      }
+    }), function(error, doc) {
+      error ? callback(error) : callback(null, doc);
+    }   
+  });
+}
+
+/**
+ * Add an exam
+ * 
+ *      @param {String} courseId - id of the course
+ *      @param {Object} exam - exam to add
+ */
+app.addExam = function(courseId, exam, callback) {
+  this.getCourseCollection(function(error, course_collection) {
+    if (error) { callback(error); return; }
+    course_collection.update( {
+      'id' : courseId
+    }, {
+      '$push' : {
+        'exams' : {
+          'date': exam.date
+        }
+      }
+    }), function(error, doc) {
+      error ? callback(error) : callback(null, doc);
+    }   
+  });
+}
+
 
 
 /**
