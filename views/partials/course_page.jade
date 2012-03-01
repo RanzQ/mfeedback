@@ -24,7 +24,7 @@ div(data-role='page', id='course-page', data-theme='a')
         h3 Exams
         ul(data-role='listview', data-inset='true')
           - each exam in exams
-            li: a(href='/course/#{id}/exam/#{exam.date}') Exam #{exam.date}
+            li: a(href='/course/#{id}/exam/#{dateFormat(exam.date, 'yyyymmdd')}') Exam: #{dateFormat(exam.date, 'dd mmm yy')}
 
   // /content
 

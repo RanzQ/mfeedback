@@ -7,7 +7,8 @@ var express = require('express')
   , stylus = require('stylus')
   , nib = require('nib')
   , mongoStore = require('connect-mongo')
-  , i18n = require("i18n");
+  , i18n = require("i18n")
+  , dateFormat = require('dateformat');
 
 var exports = module.exports = Server;
 
@@ -121,7 +122,8 @@ server._setupRoutes = function() {
             id: course.id,
             lectures: course.lectures,
             assignments: course.assignments,
-            exams: course.exams
+            exams: course.exams,
+            dateFormat: dateFormat
           };
           if (req.xhr) {
             res.partial('partials/course_page', context);
