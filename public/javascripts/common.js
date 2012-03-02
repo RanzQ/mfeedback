@@ -1,17 +1,28 @@
-var mFeedback = (function(){
+$(function() {
 
-  function randomizeLogo() {
+  mFeedback.randomizeLogo();
 
-    var color = Math.round(Math.random()*2); // 0, 1 or 2
-    var sign = Math.round(Math.random()*2);  // 0, 1 or 2
+  // This should enable swipe navigation, doesn't seem to work though
+	$('body').delegate('.ui-page','swipeleft swiperight',function(event){
+		if (event.type == "swiperight") {
+			var prev = $("#prevlink",$.mobile.activePage);
+			if (prev.length) {
+				var prevurl = $(prev).attr("href");
+				console.log(prevurl);
+				$.mobile.changePage(prevurl);
+			}
+		}
+		if (event.type == "swipeleft") {
+			var next = $("#nextlink",$.mobile.activePage);
+			if (next.length) {
+				var nexturl = $(next).attr("href");
+				console.log(nexturl);
+				$.mobile.changePage(nexturl);
+			}
+		}
+		event.preventDefault();
+	});
 
-    $('.aalto-logo').css('background-position', (-sign*48) +'px ' + (-8-color*48) + 'px');
 
-  }
 
-  // Define public functions
-  return {  
-    randomizeLogo: randomizeLogo
-  }
-
-})();
+});

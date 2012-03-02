@@ -140,7 +140,7 @@ server._setupRoutes = function() {
 
     app.get('/course/:id/lecture/:number', function(req, res){
       var id = req.params.id.toLowerCase()
-        , number = req.params.number.toLowerCase();
+        , number = req.params.number;
 
       db.getCourse(id, function(error, course) {
         if(error || !course) {
@@ -166,6 +166,27 @@ server._setupRoutes = function() {
         }
       });
     });
+
+    /*
+     * POST lecture feedback.
+     */
+
+    app.post('/course/:id/lecture/:number', function(req, res){
+      var courseId = req.params.id.toLowerCase()
+        , number = req.params.number
+        , feedback = req.body.message;
+
+      db.addFeedback(courseId, 'lecture', number, feedback, function(error, result) {
+        if(error || !req.xhr) {
+          console.log(error);
+          res.send(res_404, 404);
+        } else  {
+          console.log(result);
+          res.partial('partials/thank_you_page');
+        } 
+      });
+    });
+
 
     /*
      * GET assignment feedback page.

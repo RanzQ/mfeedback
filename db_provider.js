@@ -222,6 +222,33 @@ app.addExam = function(courseId, exam, callback) {
   });
 }
 
+/**
+ * Add feedback
+ * 
+ *      @param {String} courseId - id of the course
+ *      @param {String} type - 'lecture', 'assignment' or 'exam'
+ *      @param {String} id - number of lecture/assignment or date of exam
+ */
+app.addFeedback = function(courseId, type, id, feedback) {
+
+  if (type !== 'lecture' /*&& type !== 'assignment' && type !== 'exam'*/) {
+    callback('Invalid type.');
+  }
+  this.getCourseCollection(function(error, course_collection) {
+    if (error) { callback(error); return; }
+    course_collection.update( {
+      'id' : courseId,
+      'lectures.number': id
+    }, {
+      '$push' : {
+        'lectures.$.feedback' : feedback
+      }
+    }), function(error, doc) {
+      error ? callback(error) : callback(null, doc);
+    }   
+  });
+}
+
 
 
 /**

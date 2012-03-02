@@ -5,7 +5,7 @@ div(data-role='page', id='feedback-page', data-theme='a')
 
   div(data-role='content')
 
-    form(action='#', method='#')
+    form(action='', method='post')
       ul(data-role='listview', data-inset='true')
         li(data-role='list-divider') Feedback for lecture #{ lecture.number }: #{ lecture.title }
         li: textarea(cols='40', rows='10', name='message', id='message', value='')
