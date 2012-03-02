@@ -1,0 +1,16 @@
+// Start of course page
+div(data-role='page', id='feedback-page', data-theme='a')
+
+  include header
+
+  div(data-role='content')
+
+    form(action='#', method='#')
+      ul(data-role='listview', data-inset='true')
+        li(data-role='list-divider') Feedback for assignment #{ assignment.number }: #{ assignment.title }
+        li: textarea(cols='40', rows='10', name='message', id='message', value='')
+        li: input(type='submit', name='submit-feedback', value='Submit')
+
+  // /content
+
+// End of index page

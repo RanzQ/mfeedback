@@ -146,22 +146,22 @@ server._setupRoutes = function() {
         if(error || !course) {
           res.send(res_404, 404);
         } else { 
-          var lecture = null
-            , l;
-          for (l in course.lectures) {
+          var lecture = null;
+          for (var i in course.lectures) {
+            var l = course.lectures[i];
             if (number == l.number) lecture = l;
           }
           if(!lecture) {
             res.send(res_404, 404);
           } 
           var context = {
-            title: course.id.toUpperCase() + ' - Lecture ' + lecture.number,
+            title: course.id.toUpperCase() + ' - Lecture ' + lecture.number + ': ' + lecture.title,
             lecture: lecture
           };
           if (req.xhr) {
-            res.partial('partials/feedback_page', context);
+            res.partial('partials/lecture_feedback_page', context);
           } else {
-            res.render('feedback', context);
+            res.render('lecture_feedback', context);
           }
         }
       });
@@ -179,10 +179,10 @@ server._setupRoutes = function() {
         if(error || !course) {
           res.send(res_404, 404);
         } else { 
-          var assignment = null
-            , a;
-          for (a in course.assignments) {
-            if (number === a.number) assignment = a;
+          var assignment = null;
+          for (var i in course.assignments) {
+            var a = course.assignments[i];
+            if (number == a.number) assignment = a;
           }
           if(!assignment) {
             res.send(res_404, 404);
@@ -192,9 +192,9 @@ server._setupRoutes = function() {
             assignment: assignment
           };
           if (req.xhr) {
-            res.partial('partials/feedback_page', context);
+            res.partial('partials/assignment_feedback_page', context);
           } else {
-            res.render('feedback', context);
+            res.render('assignment_feedback', context);
           }
         }
       });
@@ -206,9 +206,9 @@ server._setupRoutes = function() {
 
     app.get('/course/:id/exam/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res){
       var id = req.params.id.toLowerCase()
-        , y = year 
-        , m = month
-        , d = day
+        , y = req.params.year 
+        , m = req.params.month
+        , d = req.params.day
         , date = new Date();
 
       date.setFullYear(y,m-1,d);
@@ -217,22 +217,23 @@ server._setupRoutes = function() {
         if(error || !course) {
           res.send(res_404, 404);
         } else { 
-          var exam = null 
-            , e;
-          for (e in course.exams) {
-            if (date == e.date) exam = e;
+          var exam = null;
+          for (var i in course.exams) {
+            var e = course.exams[i];
+            if (dateFormat(date, 'yyyymmdd') == dateFormat(e.date, 'yyyymmdd')) exam = e;
           }
           if(!exam) {
             res.send(res_404, 404);
           } 
           var context = {
-            title: course.id.toUpperCase() + ' - Exam ' + exam.date,
-            exam: exam
+            title: course.id.toUpperCase() + ' - Exam ' + dateFormat(exam.date, 'dd mmm yy'),
+            exam: exam,
+            dateFormat: dateFormat
           };
           if (req.xhr) {
-            res.partial('partials/feedback_page', context);
+            res.partial('partials/exam_feedback_page', context);
           } else {
-            res.render('feedback', context);
+            res.render('exam_feedback', context);
           }
         }
       });
