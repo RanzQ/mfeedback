@@ -10,6 +10,7 @@
     , "mongodb": ">= 0.9.9"
     , "connect-mongo": ">= 0.1.7"
     , "i18n": ">= 0.3.0"
-    , "dateformat" : ">= 1.0.2"
+    , "dateformat": ">= 1.0.2-1.2.3"
+    , "mongoose": ">= 2.5.12"
   }
 }

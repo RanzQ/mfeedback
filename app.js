@@ -6,10 +6,34 @@ var Server = require('./server')
 
 var exports = module.exports;
 
-var db = new DatabaseProvider('node-mongo-mfeedback', 'localhost', 27017);
+var oldDb = new DatabaseProvider('node-mongo-mfeedback', 'localhost', 27017);
 
-process.env['AWS_ACCESS_KEY_ID'] = '<ID>';
-process.env['AWS_SECRET_ACCESS_KEY'] = '<KEY>';
+// Mongoose test
+var mongoose = require('mongoose')
+  , db = mongoose.connect('mongodb://localhost/node-mongo-mfeedback')
+  , Schema = mongoose.Schema
+ 
+  , Course = new Schema({
+      title       : String,
+      id          : { type: String, index: true, unique: true },
+      lectures    : [Lecture],
+      assignments : [Assignment],
+      exams       : [Exam]
+    })
+  , Lecture = new Schema({
+      number  : { type: Number, min: 1, index: true, unique: true },
+      title   : String,
+      date    : Date
+    })
+  , Assignment = new Schema({
+      number  : { type: Number, min: 1, index: true, unique: true },
+      title   : String,
+      date    : Date
+    })
+  , Exam = new Schema({
+      date    : { type: Date, index: true }
+    });
+
 
 // Add some dummydata
 
@@ -66,6 +90,43 @@ var testExams = [
   {'date':testDate2},
   {'date':testDate3} ];
 
+
+// Mongoose test
+
+CourseModel = mongoose.model('Course', Course);
+
+
+var courseModels = [];
+
+for (var i = 0; i < courseCollection.length; ++i) {
+  courseModels[i] = new CourseModel({
+    title: courseCollection[i].title,
+    id: courseCollection[i].id
+  });
+}
+for (var i = 0; i < courseModels.length; ++i) {
+    for (var j = 0; j < testLectures.length; ++j) {
+      courseModels[i].lectures.push({
+        title: testLectures[j].title,
+        number: testLectures[j].number,
+        date: testLectures[j].date
+      });
+      courseModels[i].assignments.push({
+        title: testAssignments[j].title,
+        number: testAssignments[j].number,
+        date: testAssignments[j].date
+      });
+      courseModels[i].exams.push({
+        date: testExams[j].date
+      });
+    }
+  courseModels[i].save(function(error) {
+    if (error) { console.log(error); return;}
+  });
+}
+
+
+
 /*
 setTimeout(function() { 
   for (var i = 0; i < courseCollection.length; ++i) {
@@ -82,7 +143,7 @@ setTimeout(function() {
 */
 
 // Initialize the express server
-var server = new Server(db);
+var server = new Server(oldDb);
 // Server port
 var port = 8080;
 var arg2 = process.argv[2];
