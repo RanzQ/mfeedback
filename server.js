@@ -25,7 +25,7 @@ function Server(db) {
 
 server.listen = function(port) {
   this.express_server.listen(port);
-}
+};
 
 server._configure = function() {
   var app = this.express_server
@@ -77,7 +77,7 @@ server._configure = function() {
     });
   });
 
-}
+};
 
 server._setupRoutes = function() {
     var app = this.express_server
@@ -182,7 +182,7 @@ server._setupRoutes = function() {
           res.send(res_404, 404);
         } else  {
           console.log(result);
-          res.partial('partials/thank_you_page');
+          res.partial('partials/thank_you_page', {title: 'Thank you!'});
         } 
       });
     });
@@ -222,6 +222,26 @@ server._setupRoutes = function() {
     });
 
     /*
+     * POST assignment feedback.
+     */
+
+    app.post('/course/:id/assignment/:number', function(req, res){
+      var courseId = req.params.id.toLowerCase()
+        , number = req.params.number
+        , feedback = req.body.message;
+
+      db.addFeedback(courseId, 'assignment', number, feedback, function(error, result) {
+        if(error || !req.xhr) {
+          console.log(error);
+          res.send(res_404, 404);
+        } else  {
+          console.log(result);
+          res.partial('partials/thank_you_page', {title: 'Thank you!'});
+        } 
+      });
+    });
+
+    /*
      * GET exam feedback page.
      */
 
@@ -233,6 +253,7 @@ server._setupRoutes = function() {
         , date = new Date();
 
       date.setFullYear(y,m-1,d);
+      date.setHours(0, 0, 0, 0);
 
       db.getCourse(id, function(error, course) {
         if(error || !course) {
@@ -261,241 +282,31 @@ server._setupRoutes = function() {
     });
 
     /*
-    server.get('/c/:id([a-z0-9]{1,5})', function(req, res, next) {
-        var id = req.params.id.toLowerCase();
-        db.getLectureById(id, function(error, lecture) {
-            if(error || !lecture) {
-                res.send(res_404, 404);
-            } else if (req.session.adminOf && req.session.adminOf[id] == true) {
-                res.render('control.jade', { lecture: lecture });
-            } else {
-                res.render('pinform',  { lecture: lecture, method: 'post', errors: {pin: ''} });
-            } 
-        });
-    });
-    
+     * POST exam feedback.
+     */
 
-   server.post('/c/:id([a-z0-9]{1,5})/pin', function(req, res) {
-        var id = req.params.id.toLowerCase();
-        db.getLectureById(id, function(error, lecture) {
-            if(error || !lecture) {
-                res.send(res_404, 404);
-            } else if (lecture.pin === req.body.pincode) {
-                if(!req.session.adminOf) { 
-                    req.session.adminOf = { };
-                }
-                req.session.adminOf[id] = true;
-                res.redirect('/c/' + id);
-            } else {
-                res.render('pinform',  {lecture: lecture, method: 'post', errors: {pin: 'Invalid pin'} });
-            }
-        });
-    });
+    app.post('/course/:id/exam/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res){
+      var courseId = req.params.id.toLowerCase()
+        , feedback = req.body.message
+        , y = req.params.year 
+        , m = req.params.month
+        , d = req.params.day
+        , date = new Date();
 
+      date.setFullYear(y,m-1,d);
+      date.setHours(0, 0, 0, 0);
 
-    server.get('/b/:id([a-z0-9]{1,5})', function(req, res, next) {
-        var id = req.params.id.toLowerCase();
-        db.getLectureById(id, function(error, lecture) {
-            if(error || !lecture) {
-                res.send(res_404, 404);
-            } else { 
-                res.render('bigscreen.jade', {
-                    title: lecture.title, 
-                });
-            }
-        });
-
-    });
-
-
-    server.get('/c/:lid([a-z0-9]+)/chat/:eid([0-9]+)', function(req, res) {
-        var lid = req.params.lid.toLowerCase(); // lecture ID
-        var eid = parseInt(req.params.eid, 10); // event ID
-        var cid = lid + '_' + eid;              // channel ID
-        //console.log(cid + ' REQUESTED');
-
-        if (req.xhr) {
-            db.getCappedBacklog(cid, function(error, messages) {
-                if(error || !messages) {
-                    console.log(error); 
-                    res.send(res_404, 404); 
-                    return;
-                }
-                //console.log(messages.length);
-                
-                res.partial('control_chat.jade', {lectureId: lid, eventId: eid, messages: messages});
-                
-            });
-        } else {
-            res.send(res_404, 404);
-        }   
-    });
-
-    server.get('/c/:lid([a-z0-9]+)/poll/:eid([0-9]+)', function(req, res) {
-        var lid = req.params.lid.toLowerCase(); // lecture ID
-        var eid = parseInt(req.params.eid, 10); // event ID
-        if (req.xhr) {
-            db.getLectureEventById(lid, eid, function(error, event) {
-
-                db.getPollById(event.pid, function(error, poll) {
-                    if(error || !poll) {
-                        console.log(error);
-                        res.send(res_404, 404); 
-                        return;
-                    }
-                    res.partial('control_poll.jade', {lectureId: lid, poll: poll, eventTitle: event.title});
-                }); 
-            });
-        } else {
-            res.send(res_404, 404);
-        }          
-    });
-
-    server.get('/poll/:id([0-9]+)/results', function(req, res, next) {
-        var id = req.params.id.toLowerCase();
-        if (req.xhr) {
-            //TODO: Fix me
-            res.partial('pollresult.jade', {poll: []});
-        } else {
-            res.send('Nope.', 404);
-        }          
-    });
-
-    server.get('/lecture/?', function(req, res) {
-        db.getLectures(function(error, lectures) {
-            res.render('lectures', {
-                'lectures': lectures,
-                'isCollapsed': 'true',
-                'errors': {'pin': '', 'title': '', 'url': ''}, 
-                'fields': {'pin': '', 'title': '', 'url': ''} 
-            });
-        });
-    });
-
-    server.post('/lecture/?', function(req, res) {
-        //res.send(req.body);
-        var url_regex = /^[a-z0-9]{1,5}$/
-          , pin_regex = /^[0-9]{4}$/
-          , title = req.body.title
-          , url = req.body.url
-          , pin = req.body.pin
-          , response = res
-          , request = req
-          , res_data = {
-                'lectures': {},
-                'isCollapsed': 'false',
-                'errors': {'pin': '', 'title': '', 'url': ''}, 
-                'fields': {'pin': pin, 'title': title, 'url': url} 
-            };
-
-
-        if (pin.search(pin_regex) == -1) {
-            res_data.errors.pin = 'Invalid pin (4 digits)';
-        }
-        if (url.search(url_regex) == -1) {
-            res_data.errors.url = 'Invalid ID (max 5 characters, no special characters)';
-        }
-        if (!title || title.length > 64) {
-            res_data.errors.title = 'Invalid title';
-        }
-        if (res_data.errors.pin || res_data.errors.url || res_data.errors.title) {
-            response.render('lectures', res_data);
-            return;
-        }
-
-
-        db.getLectureById(url, function(error, lecture) {
-            if (error) {
-                console.log(error);
-                response.send(res_404, 404);
-                return;
-            }
-            if (lecture) {
-                res_data.errors.url = 'A lecture with that ID already exists, please choose another one';
-                response.render('lectures', res_data);
-                return;
-            }
-
-            var lecture = {
-                owner: 'Unknown',           //username for the owner of this lecture
-                title: title,               //title of the lecture
-                lid: url,                   //lecture id
-                pin: pin,                   //controller pin code
-                state_c: 0,                 //state variables for the controller of this lecture
-                state_s: 0,                 //state variables for the student view of this lecture
-                state_b: 0,                 //state variables for the bigscreen view of this lecture
-                events: []                  //list of all events (dicts) that belong to this lecture
-            };
-            db.addLecture(lecture, function(error, result) { 
-                if (error) { 
-                    console.log(error);
-                    response.send(res_404, 404);
-                    return;
-                }
-                response.redirect('/c/' + url);
-            });
-            
-        });
-    });
-
-    server.get('/lecture/:id', function(req, res) {
-        res.redirect('/lecture');
-    });
-
-    server.post('/lecture/:id', function(req, res) {
-        res.redirect('/lecture');
-    });
-
-    server.del('/lecture/:id([a-z0-9]{1,5})', function(req, res) {
-        var id = req.params.id.toLowerCase();
-        console.log('Delete requested for lecture ' + id);
-        db.getLectureById(id, function(error, lecture) {
-            if(error || !lecture) {
-                res.send(res_404, 404);
-            } else if (req.session.adminOf && req.session.adminOf[id] == true) {
-                console.log('Requesting user was authenticated, proceeding...');
-                db.removeLecture(id, function(error) {
-                    if (error) console.log(error);
-                    res.contentType('application/json');
-                    res.send({'redirect': '/lecture'});
-                });             
-            } else {
-                res.contentType('application/json');
-                res.send({'redirect': '/c/' + id});
-            } 
-        });
+      db.addFeedback(courseId, 'exam', date, feedback, function(error, result) {
+        if(error || !req.xhr) {
+          console.log(error);
+          res.send(res_404, 404);
+        } else  {
+          console.log(result);
+          res.partial('partials/thank_you_page', {title: 'Thank you!'});
+        } 
+      });
     });
 
 
 
-
-    server.get('/:id([a-z0-9]{1,5})', function(req, res, next) {
-        var id = req.params.id.toLowerCase();
-        db.getLectureById(id, function(error, lecture) {
-            if(error || !lecture) {
-                res.send(res_404, 404);
-            } else { 
-                res.render('student.jade', {
-                    title: lecture.title
-                });
-            }
-        });
-    });
-
-
-
-    server.get('/', function(req, res){
-      // Temporary redirect
-      res.redirect('/lecture/');
-    })
-
-
-
-
-    server.on('connection', function(sock) {
-      console.log('Client connected from ' + sock.remoteAddress);
-      // Client address at time of connection ----^
-    });
-    */
-
-}
+};

@@ -6,38 +6,11 @@ var Server = require('./server')
 
 var exports = module.exports;
 
-var oldDb = new DatabaseProvider('node-mongo-mfeedback', 'localhost', 27017);
-
-// Mongoose test
-var mongoose = require('mongoose')
-  , db = mongoose.connect('mongodb://localhost/node-mongo-mfeedback')
-  , Schema = mongoose.Schema
- 
-  , Course = new Schema({
-      title       : String,
-      id          : { type: String, index: true, unique: true },
-      lectures    : [Lecture],
-      assignments : [Assignment],
-      exams       : [Exam]
-    })
-  , Lecture = new Schema({
-      number  : { type: Number, min: 1, index: true, unique: true },
-      title   : String,
-      date    : Date
-    })
-  , Assignment = new Schema({
-      number  : { type: Number, min: 1, index: true, unique: true },
-      title   : String,
-      date    : Date
-    })
-  , Exam = new Schema({
-      date    : { type: Date, index: true }
-    });
-
+var db = new DatabaseProvider('mfeedback');
 
 // Add some dummydata
 
-var courseCollection = [
+var courses = [
   {'id':'t-76.1143', 'title':'Tiedonhallintajärjestelmät'},
   {'id':'t-76.3601', 'title':'Introduction to Software Engineering'},
   {'id':'t-76.4115', 'title':'Software Development Project I'},
@@ -72,8 +45,13 @@ var testDate = new Date()
   , testDate3 = new Date();
 
 testDate.setFullYear(2012, 1, 1);
+testDate.setHours(0, 0, 0, 0);
 testDate2.setFullYear(2012, 2, 2);
+testDate2.setHours(0, 0, 0, 0);
 testDate3.setFullYear(2012, 3, 3);
+testDate3.setHours(0, 0, 0, 0);
+
+
 
 var testLectures = [
   {'number':'1', 'title':'First lecture', 'date':testDate},
@@ -91,59 +69,27 @@ var testExams = [
   {'date':testDate3} ];
 
 
-// Mongoose test
-
-CourseModel = mongoose.model('Course', Course);
-
-
-var courseModels = [];
-
-for (var i = 0; i < courseCollection.length; ++i) {
-  courseModels[i] = new CourseModel({
-    title: courseCollection[i].title,
-    id: courseCollection[i].id
-  });
-}
-for (var i = 0; i < courseModels.length; ++i) {
-    for (var j = 0; j < testLectures.length; ++j) {
-      courseModels[i].lectures.push({
-        title: testLectures[j].title,
-        number: testLectures[j].number,
-        date: testLectures[j].date
-      });
-      courseModels[i].assignments.push({
-        title: testAssignments[j].title,
-        number: testAssignments[j].number,
-        date: testAssignments[j].date
-      });
-      courseModels[i].exams.push({
-        date: testExams[j].date
-      });
-    }
-  courseModels[i].save(function(error) {
-    if (error) { console.log(error); return;}
-  });
+function saveCallback(err) {
+  if (err) console.log(err);
 }
 
+for (var i = 0; i < courses.length; ++i) {
 
+  var newCourse = new db.courses(courses[i]);
 
-/*
-setTimeout(function() { 
-  for (var i = 0; i < courseCollection.length; ++i) {
-    db.addCourse(courseCollection[i], function(error, result) { 
-      if(error) console.log(error); 
-      for (var j = 0; j < testLectures.length; ++j) {
-        db.addLecture(courseCollection[i].id, testLectures[j], function(error, result) { if(error) console.log(error); });
-        db.addAssignment(courseCollection[i].id, testAssignments[j], function(error, result) { if(error) console.log(error); });
-        db.addExam(courseCollection[i].id, testExams[j], function(error, result) { if(error) console.log(error); });
-      }
-    });
+  for (var j = 0; j < testLectures.length; ++j) {
+    newCourse.lectures.push(testLectures[j]);
+    newCourse.assignments.push(testAssignments[j]);
+    newCourse.exams.push(testExams[j]);
   }
-}, 2000);
-*/
+
+  newCourse.save(saveCallback);
+
+}
+
 
 // Initialize the express server
-var server = new Server(oldDb);
+var server = new Server(db);
 // Server port
 var port = 8080;
 var arg2 = process.argv[2];
@@ -156,10 +102,10 @@ if(typeof arg2 === 'string') {
 
 
 try {
-    server.listen(port);
+  server.listen(port);
 } catch (error) {
-    console.log('Unable to listen to port ' + port + '\nError returned was:\n\n' + error + '\n\nExiting...');
-    process.exit(1);
+  console.log('Unable to listen to port ' + port + '\nError returned was:\n\n' + error + '\n\nExiting...');
+  process.exit(1);
 }
 console.log('Listening to port ' + port);
 exports.server = server;
@@ -167,7 +113,7 @@ exports.server = server;
 
 // Setup node process handling.
 //logger.info('node process started', {pid: process.pid, argv: process.argv});
-process.title = 'node w1'; // Shown on ps -Af | grep node
+process.title = 'node mfeedback'; // Shown on ps -Af | grep node
 process.on('SIGINT', function() {
   // Ctrl+C pressed. Could listen for a confirming keypress to really exit.
   gracefulShutdown('SIGINT');
