@@ -8,8 +8,8 @@ var exports = module.exports;
 
 var db = new DatabaseProvider('mfeedback');
 
-// Add some dummydata
-
+// Uncomment following to add some dummydata
+/*
 var courses = [
   {'id':'t-76.1143', 'title':'Tiedonhallintajärjestelmät'},
   {'id':'t-76.3601', 'title':'Introduction to Software Engineering'},
@@ -85,7 +85,7 @@ for (var i = 0; i < courses.length; ++i) {
 
   newCourse.save(saveCallback);
 
-}
+}*/
 
 
 // Initialize the express server

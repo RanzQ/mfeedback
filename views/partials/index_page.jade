@@ -5,13 +5,11 @@ div(data-role='page', id="index-page", data-theme='a')
   div(data-role='content')
     h2 Welcome to #{title}
 
-    ul(data-role='listview', data-filter='true', data-inset='true')
-      li(data-role='list-divider') Select course
-      - each course in courses
+    ul(data-role='listview', data-inset='true')
+      li(data-role='list-divider') Select organization
+      - each organization in organizations
         li
-          a(href="course/" + course.id)
-            span(class='course-id')= course.id.toUpperCase()
-            span(class='course-title')= course.title
+          a(href='/#{organization.id}')= organization.title
             
   // /content
 

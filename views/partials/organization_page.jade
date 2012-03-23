@@ -1,0 +1,17 @@
+// Start of organization page
+div(data-role='page', id='organization-page', data-theme='a')
+
+  include header
+
+  div(data-role='content')
+
+    ul(data-role='listview', data-filter='true', data-inset='true')
+      li(data-role='list-divider') Select department
+      - each department in departments
+        li
+          a(href='/#{orgId}/#{department.id}')= department.title
+
+  // /content
+
+// End of course page
+

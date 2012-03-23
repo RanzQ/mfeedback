@@ -34,25 +34,25 @@ function DatabaseProvider(dbName) {
     , CourseSchema = new Schema({
         title       : String
       , id          : { type: String, index: true, unique: true }
+      , department  : { type: String, index: true }
       , lectures    : [LectureSchema]
       , assignments : [AssignmentSchema]
       , exams       : [ExamSchema]
       , feedbacks   : [FeedbackSchema]
     })
     , DepartmentSchema = new Schema({
-        title      : String
-      , id         : { type: String, index: true, unique: true }
-      , course_ids : [String]
+        title        : String
+      , id           : { type: String, index: true, unique: true }
+      , organization : String
     })
     , OrganizationSchema = new Schema({
-        title      : { type: String, index: true, unique: true }
-      , id         : { type: String, index: true, unique: true }        
-      , deparments : [DepartmentSchema]
+        title       : { type: String, index: true, unique: true }
+      , id          : { type: String, index: true, unique: true }  
     });
 
-    // this.Department = db.model('Department', DepartmentSchema);
-    this.courses = mongoose.model('Course', CourseSchema);
-
+  this.organizations = mongoose.model('Organization', OrganizationSchema);
+  this.departments = mongoose.model('Department', DepartmentSchema);
+  this.courses = mongoose.model('Course', CourseSchema);
 
 }
 
@@ -70,8 +70,7 @@ app.close = function() {
 /**
  * Add a new course
  * 
- *      @param {String} course.id - id of the course
- *      @param {String} course.title - title of the course
+ *      @param {Object} course 
  */
 app.addCourse = function(course, callback) {
   var newCourse = new this.courses(course);
@@ -81,8 +80,8 @@ app.addCourse = function(course, callback) {
   });
 };
 
-app.getCourses = function(callback) {
-  this.courses.find({}, function (err, docs) {
+app.getCoursesByDepartment = function(depId, callback) {
+  this.courses.find({'department': depId}, function (err, docs) {
     if (err) {callback(err); return;}
     callback(null, docs);  
   });
@@ -109,6 +108,27 @@ app.addLecture = function(courseId, lecture, callback) {
       if (err) {callback(err); return;}
       callback(null);  
     });
+  });
+};
+
+app.getOrganizations = function(callback) {
+  this.organizations.find({}, function(err,docs) {
+    if (err) {callback(err); return;}
+    callback(null, docs);     
+  });
+};
+
+app.getOrganization = function(id, callback) {
+  this.organizations.find({'id': id}, function(err,doc) {
+    if (err) {callback(err); return;}
+    callback(null, doc);     
+  });
+};
+
+app.getDepartmentsByOrganization = function(orgId, callback) {
+  this.departments.find({'organization': orgId}, function(err,doc) {
+    if (err) {callback(err); return;}
+    callback(null, doc);     
   });
 };
 
