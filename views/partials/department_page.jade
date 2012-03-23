@@ -8,7 +8,7 @@ div(data-role='page', id="department-page", data-theme='a')
       li(data-role='list-divider') Select course
       - each course in courses
         li
-          a(href="course/" + course.id)
+          a(href="/course/" + course.id)
             span(class='course-id')= course.id.toUpperCase()
             span(class='course-title')= course.title
             

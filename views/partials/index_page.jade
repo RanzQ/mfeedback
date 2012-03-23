@@ -1,5 +1,5 @@
 // Start of index page
-div(data-role='page', id="index-page", data-theme='a')
+div(data-role='page', id='index-page', data-theme='a')
   include header
 
   div(data-role='content')
@@ -9,7 +9,7 @@ div(data-role='page', id="index-page", data-theme='a')
       li(data-role='list-divider') Select organization
       - each organization in organizations
         li
-          a(href='/#{organization.id}')= organization.title
+          a(href='/courses/#{organization.id}')= organization.title
             
   // /content
 

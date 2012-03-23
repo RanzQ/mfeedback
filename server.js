@@ -10,6 +10,7 @@ var express = require('express')
   , i18n = require("i18n")
   , dateFormat = require('dateformat');
 
+// Fix white-space problem with textareas
 require('jade/lib/inline-tags').push('textarea');
 
 var exports = module.exports = Server;
@@ -108,7 +109,7 @@ server._setupRoutes = function() {
      * GET organization page.
      */
 
-    app.get('/:id', function(req, res) {
+    app.get('/courses/:id', function(req, res) {
       var id = req.params.id.toLowerCase();
       db.getOrganization(id, function(error, organization) {
         if (error || !organization) { res.send(res_404, 404); return; }  
@@ -132,7 +133,7 @@ server._setupRoutes = function() {
      * GET department page.
      */
 
-    app.get('/:orgid/:depid', function(req, res) {
+    app.get('/courses/:orgid/:depid', function(req, res) {
       var orgId = req.params.orgid.toLowerCase();
       var depId = req.params.depid.toLowerCase();
       db.getOrganization(orgId, function(error, organization) {
@@ -140,10 +141,7 @@ server._setupRoutes = function() {
         db.getDepartment(depId, function(error, department) {
           if (error || !department) { res.send(res_404, 404); return; } 
           db.getCoursesByDepartment(depId, function(error, courses) {
-            if (error || !courses) {
-              res.send(res_404, 404);
-              return;
-            }
+            if (error || !courses) { res.send(res_404, 404); return; } 
             var context = {
               title: 'Mobile Feedback - ' + department.title,
               courses: courses

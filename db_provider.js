@@ -119,7 +119,7 @@ app.getOrganizations = function(callback) {
 };
 
 app.getOrganization = function(id, callback) {
-  this.organizations.find({'id': id}, function(err,doc) {
+  this.organizations.findOne({'id': id}, function(err,doc) {
     if (err) {callback(err); return;}
     callback(null, doc);     
   });
@@ -127,6 +127,13 @@ app.getOrganization = function(id, callback) {
 
 app.getDepartmentsByOrganization = function(orgId, callback) {
   this.departments.find({'organization': orgId}, function(err,doc) {
+    if (err) {callback(err); return;}
+    callback(null, doc);     
+  });
+};
+
+app.getDepartment = function(id, callback) {
+  this.departments.findOne({'id': id}, function(err,doc) {
     if (err) {callback(err); return;}
     callback(null, doc);     
   });
