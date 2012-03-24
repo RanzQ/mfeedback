@@ -1,0 +1,12 @@
+Required libraries:
+    BeautifulSoup4
+
+
+
+Installation
+
+    pip install beautifulsoup4
+
+    OR
+
+    easy_install beautifulsoup4

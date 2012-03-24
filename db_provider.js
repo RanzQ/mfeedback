@@ -16,15 +16,14 @@ function DatabaseProvider(dbName) {
         body : String
     })
     , LectureSchema = new Schema({
-        number    : { type: Number, min: 1, index: true }
-      , title     : String
-      , date      : Date
+        topic     : String
+      , date      : { type: Date, index: true }
       , feedbacks : [FeedbackSchema]
     })
     , AssignmentSchema = new Schema({
         number  : { type: Number, min: 1, index: true }
-      , title   : String
-      , date    : Date
+      , title     : String
+      , deadline  : Date
       , feedbacks : [FeedbackSchema]
     })
     , ExamSchema = new Schema({
@@ -35,6 +34,7 @@ function DatabaseProvider(dbName) {
         title       : String
       , id          : { type: String, index: true, unique: true }
       , department  : { type: String, index: true }
+      , isActive    : Boolean
       , lectures    : [LectureSchema]
       , assignments : [AssignmentSchema]
       , exams       : [ExamSchema]
@@ -94,6 +94,10 @@ app.getCourse = function(id, callback) {
   });
 };
 
+app.searchCourses = function(term, callback) {
+  // TODO: Implement me
+};
+
 /**
  * Add a lecture
  * 
@@ -101,7 +105,6 @@ app.getCourse = function(id, callback) {
  *      @param {Object} lecture - lecture to add
  */
 app.addLecture = function(courseId, lecture, callback) {
-
   this.courses.findOne({'id': courseId}, function(err, course) {
     if (err) {callback(err); return;}
     course.lectures.push(lecture, {upsert: true}, function(err) {
