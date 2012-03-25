@@ -14,17 +14,20 @@ div(data-role='page', id='course-page', data-theme='a')
         h3 Lectures
         ul(data-role='listview', data-inset='true')
           - each lecture in lectures
-            li: a(href='/course/#{id}/lecture/#{lecture.number}') Lecture #{lecture.number}: #{lecture.title}
+            li: a(href='/course/#{id}/lecture/#{dateFormat(lecture.date, 'yyyymmdd')}')
+              |#{dateFormat(lecture.date, 'dd mmm yy')}: #{lecture.topic}
       div(data-role='collapsible')
         h3 Assignments
         ul(data-role='listview', data-inset='true')
           - each assignment in assignments
-            li: a(href='/course/#{id}/assignment/#{assignment.number}') Assignment #{assignment.number}: #{assignment.title}
+            li: a(href='/course/#{id}/assignment/#{dateFormat(assignment.deadline, 'yyyymmddHHMM')}')
+              |#{assignment.title} (DL: #{dateFormat(assignment.deadline, 'dd mmm yy')})
       div(data-role='collapsible')
         h3 Exams
         ul(data-role='listview', data-inset='true')
           - each exam in exams
-            li: a(href='/course/#{id}/exam/#{dateFormat(exam.date, 'yyyymmdd')}') Exam: #{dateFormat(exam.date, 'dd mmm yy')}
+            li: a(href='/course/#{id}/exam/#{dateFormat(exam.date, 'yyyymmdd')}')
+              |Exam: #{dateFormat(exam.date, 'dd mmm yy')}
 
   // /content
 

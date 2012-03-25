@@ -177,10 +177,10 @@ app.addExam = function(courseId, exam, callback) {
  * 
  *      @param {String} courseId - id of the course
  *      @param {String} type - 'lecture', 'assignment' or 'exam'
- *      @param {String} id - number of lecture/assignment or date of exam
+ *      @param {String} date - date or deadline
  *      @param {String} feedback - feedback text
  */
-app.addFeedback = function(courseId, type, id, feedback, callback) {
+app.addFeedback = function(courseId, type, date, feedback, callback) {
   timestamp = new Date();
   if (type == 'course') {
     this.courses.update({'id' : courseId}, { '$push': {'feedbacks': {
@@ -191,7 +191,8 @@ app.addFeedback = function(courseId, type, id, feedback, callback) {
       callback(null, doc);
     });
   } else if (type == 'lecture') {
-    this.courses.update({'id' : courseId, 'lectures.number': id}, {
+    console.log(date);
+    this.courses.update({'id' : courseId, 'lectures.date': date}, {
       '$push': {'lectures.$.feedbacks': {
         'body': feedback,
         'date': timestamp
@@ -200,7 +201,7 @@ app.addFeedback = function(courseId, type, id, feedback, callback) {
       callback(null, doc);
     });
   } else if (type == 'assignment') {
-    this.courses.update({'id' : courseId, 'assignments.number': id}, {
+    this.courses.update({'id' : courseId, 'assignments.deadline': date}, {
       '$push': {'assignments.$.feedbacks': {
         'body': feedback,
         'date': timestamp
@@ -209,7 +210,7 @@ app.addFeedback = function(courseId, type, id, feedback, callback) {
       callback(null, doc);
     });
   } else if (type == 'exam') {
-    this.courses.update({'id' : courseId, 'exams.date': id}, {
+    this.courses.update({'id' : courseId, 'exams.date': date}, {
       '$push': {'exams.$.feedbacks': {
         'body': feedback,
         'date': timestamp

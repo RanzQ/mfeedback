@@ -1,8 +1,11 @@
-import datetime
 import calendar
+import pytz
+from datetime import datetime
 
 #{'': 0, 'Mar': 3, 'Feb': 2, 'Aug': 8, 'Sep': 9, 'Apr': 4, 'Jun': 6, 'Jul': 7, 'Jan': 1, 'May': 5, 'Nov': 11, 'Dec': 12, 'Oct': 10}
-month_to_int = dict((v,k) for k,v in enumerate(calendar.month_abbr))
+month_to_int = dict((v, k) for k, v in enumerate(calendar.month_abbr))
+
+TIME_ZONE = 'Europe/Helsinki'
 
 
 def ensure_indexes(db, collections, verbose=False):
@@ -12,6 +15,14 @@ def ensure_indexes(db, collections, verbose=False):
             db_collection.ensure_index(field, unique=True)
             if verbose == True:
                 print 'Unique index ensured for {} in collection {}'.format(field, collection['name'])
+
+
+def get_utc_from_local(date_time, local_tz=None):
+    assert date_time.__class__.__name__ == 'datetime'
+    if local_tz is None:
+        local_tz = pytz.timezone(TIME_ZONE)
+    local_time = local_tz.normalize(local_tz.localize(date_time))
+    return local_time.astimezone(pytz.utc)
 
 
 def generate_ISO_date(date_string):
@@ -71,7 +82,9 @@ def generate_ISO_date(date_string):
         else:
             year += 2000 if year < 70 else 1900
 
-        date = datetime.datetime(year, month, day, hour, minute)
+        # Convert to UTC datetime
+        date = get_utc_from_local(datetime(year, month, day, hour, minute),
+            pytz.timezone('Europe/Helsinki'))
 
-    #print date
+    print date
     return date

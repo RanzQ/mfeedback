@@ -184,21 +184,28 @@ server._setupRoutes = function() {
      * GET lecture feedback page.
      */
 
-    app.get('/course/:id/lecture/:number', function(req, res) {
+    app.get('/course/:id/lecture/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
       var id = req.params.id.toLowerCase()
-        , number = req.params.number;
+        , y = req.params.year 
+        , m = req.params.month
+        , d = req.params.day
+        , date = new Date();
+
+      date.setFullYear(y,m-1,d);
+      date.setHours(0, 0, 0, 0);
 
       db.getCourse(id, function(error, course) {
         if (error || !course) { res.send(res_404, 404); return; }
         var lecture = null;
         for (var i in course.lectures) {
           var l = course.lectures[i];
-          if (number == l.number) lecture = l;
+          if (dateFormat(date, 'yyyymmdd') == dateFormat(l.date, 'yyyymmdd')) lecture = l;
         }
         if (!lecture) { res.send(res_404, 404); return; } 
         var context = {
-          title: course.id.toUpperCase() + ' - Lecture ' + lecture.number + ': ' + lecture.title,
-          lecture: lecture
+          title: course.id.toUpperCase() + ' - Lecture ' + dateFormat(lecture.date, 'dd mmm yy'),
+          lecture: lecture,
+          dateFormat: dateFormat
         };
         if (req.xhr) {
           res.partial('partials/lecture_feedback_page', context);
@@ -212,12 +219,18 @@ server._setupRoutes = function() {
      * POST lecture feedback.
      */
 
-    app.post('/course/:id/lecture/:number', function(req, res) {
+    app.post('/course/:id/lecture/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
       var courseId = req.params.id.toLowerCase()
-        , number = req.params.number
+        , y = req.params.year 
+        , m = req.params.month
+        , d = req.params.day
+        , date = new Date()
         , feedback = req.body.message;
 
-      db.addFeedback(courseId, 'lecture', number, feedback, function(error, result) {
+      date.setFullYear(y,m-1,d);
+      date.setHours(0, 0, 0, 0);
+
+      db.addFeedback(courseId, 'lecture', date, feedback, function(error, result) {
         if (error || !req.xhr) { res.send(res_404, 404); return; }
         console.log(result);
         res.partial('partials/thank_you_page', {title: 'Thank you!'});
@@ -229,21 +242,30 @@ server._setupRoutes = function() {
      * GET assignment feedback page.
      */
 
-    app.get('/course/:id/assignment/:number', function(req, res) {
+    app.get('/course/:id/assignment/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2}):hour([0-9]{2}):minute([0-9]{2})', function(req, res) {
       var id = req.params.id.toLowerCase()
-        , number = req.params.number.toLowerCase();
+        , y = req.params.year 
+        , m = req.params.month
+        , d = req.params.day
+        , h = req.params.hour
+        , min = req.params.minute
+        , date = new Date();
+
+      date.setFullYear(y,m-1,d);
+      date.setHours(h, min, 0, 0);
 
       db.getCourse(id, function(error, course) {
         if (error || !course) { res.send(res_404, 404); return; } 
         var assignment = null;
         for (var i in course.assignments) {
           var a = course.assignments[i];
-          if (number == a.number) assignment = a;
+          if (dateFormat(date, 'yyyymmdd') == dateFormat(assignment.date, 'yyyymmdd')) assignment = a;
         }
-        if (!assignment) { res.send(res_404, 404); return; }  
+        if (!lecture) { res.send(res_404, 404); return; } 
         var context = {
-          title: course.id.toUpperCase() + ' - Assignment ' + assignment.number,
-          assignment: assignment
+          title: course.id.toUpperCase() + ' - ' + assignment.title,
+          assignment: assignment,
+          dateFormat: dateFormat
         };
         if (req.xhr) {
           res.partial('partials/assignment_feedback_page', context);
