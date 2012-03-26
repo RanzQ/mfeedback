@@ -140,7 +140,7 @@ server._setupRoutes = function() {
         if (error || !organization) { res.send(res_404, 404); return; }  
         db.getDepartment(depId, function(error, department) {
           if (error || !department) { res.send(res_404, 404); return; } 
-          db.getCoursesByDepartment(depId, function(error, courses) {
+          db.getCoursesByDepartment(depId, true, function(error, courses) {
             if (error || !courses) { res.send(res_404, 404); return; } 
             var context = {
               title: 'Mobile Feedback - ' + department.title,
@@ -416,5 +416,33 @@ server._setupRoutes = function() {
     });
 
 
+  /*
+   * GET course search
+   */
+
+  app.get('/search', function(req, res) {
+    var query = req.query
+      , db_query = query;
+    for (i in query) {
+      if (i !== 'q' && i !== 'id' && i !== 'title') {
+        delete db_query[i];
+      }
+    }
+    console.log(req.query);
+    db.searchCourses(db_query, function(error, result) {
+      if (error) {console.log(error); res.send(res_404, 404); return; }
+      context = {'title': 'Search results', 'results': result, 'search_term': db_query['q']};
+      if (req.xhr) {
+        //console.log('THE REQUEST WAS FUCKING AJAX!');
+        res.partial('partials/search_results_page', context);
+      } else {
+        //console.log('I SURE HOPE WE DO NOT VISIT HERE');
+        res.render('search_results', context);
+      }
+      
+    });
+    
+    //res.render('exam_feedback', {title:'', exam:'', dateFormat:''});
+  });
 
 };

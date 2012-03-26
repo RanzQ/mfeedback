@@ -86,5 +86,5 @@ def generate_ISO_date(date_string):
         date = get_utc_from_local(datetime(year, month, day, hour, minute),
             pytz.timezone('Europe/Helsinki'))
 
-    print date
+    #print date
     return date

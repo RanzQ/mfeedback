@@ -1,0 +1,21 @@
+// Start of course page
+div(data-role='page', id='search-page', data-theme='a')
+  include header
+
+  div(data-role='content')
+
+    include search_form
+    ul(data-role='listview', data-filter='true', data-inset='true')
+      li(data-role='list-divider') Search results
+      if results.length === 0
+        li
+          span No hits for query '#{search_term}', try again
+      else
+        each result in results
+          li
+            a(href='/course/#{result.id}')= result.title
+
+  // /content
+
+// End of search page
+

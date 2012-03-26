@@ -80,8 +80,13 @@ app.addCourse = function(course, callback) {
   });
 };
 
-app.getCoursesByDepartment = function(depId, callback) {
-  this.courses.find({'department': depId}, function (err, docs) {
+app.getCoursesByDepartment = function(depId,  activeOnly, callback) {
+  var query = {'department': depId};
+  if (activeOnly === true) {
+    query.isActive = true;
+  }
+  console.log(query)
+  this.courses.find(query, function (err, docs) {
     if (err) {callback(err); return;}
     callback(null, docs);  
   });
@@ -95,8 +100,30 @@ app.getCourse = function(id, callback) {
 };
 
 app.searchCourses = function(term, callback) {
-  var regexp = new RegExp(term, 'i');
-  this.courses.find({'$or': [{'title': regexp}, {'id': regexp}]},
+  var regexp = null
+    , query = []
+    , full_query = null;
+  if (typeof term !== 'object' || term.length === 0) {
+    callback('The term must be an object!');
+    return;
+  }
+
+  if (term.q && term.q !== '') {
+    regexp = new RegExp(term.q, 'i');
+    query = [{'title': regexp}, {'id': regexp}]
+    full_query = {'$or': query};
+  } else {
+    if (term.id && term.id !== '') {
+      query.push({'id': new RegExp(term.id, 'i')});
+    }
+    if (term.title && term.title !== '') {
+      query.push({'title': new RegExp(term.title, 'i')});
+    }
+    full_query = {'$and': query};
+  } 
+
+  
+  this.courses.find(full_query,
     function (err, docs) {
     if (err) {callback(err); return;}
     callback(null, docs);  
@@ -187,43 +214,31 @@ app.addExam = function(courseId, exam, callback) {
  */
 app.addFeedback = function(courseId, type, date, feedback, callback) {
   timestamp = new Date();
-  if (type == 'course') {
-    this.courses.update({'id' : courseId}, { '$push': {'feedbacks': {
-        'body': feedback,
-        'date': timestamp
-      }}}, { upsert: true }, function(err, doc) {
-      if (err) {callback(err); return;}
-      callback(null, doc);
-    });
-  } else if (type == 'lecture') {
+  var query = {'id': courseId};
+  var feedbackBody = {'body': feedback, 'date': timestamp};
+  var update = null;
+  if (type === 'course') {
+    update = {'feedbacks': feedbackBody};
+  } else if (type === 'lecture') {
     console.log(date);
-    this.courses.update({'id' : courseId, 'lectures.date': date}, {
-      '$push': {'lectures.$.feedbacks': {
-        'body': feedback,
-        'date': timestamp
-      }}}, { upsert: true }, function(err, doc) {
-      if (err) {callback(err); return;}
-      callback(null, doc);
-    });
-  } else if (type == 'assignment') {
-    this.courses.update({'id' : courseId, 'assignments.deadline': date}, {
-      '$push': {'assignments.$.feedbacks': {
-        'body': feedback,
-        'date': timestamp
-      }}}, { upsert: true }, function(err, doc) {
-      if (err) {callback(err); return;}
-      callback(null, doc);
-    });
-  } else if (type == 'exam') {
-    this.courses.update({'id' : courseId, 'exams.date': date}, {
-      '$push': {'exams.$.feedbacks': {
-        'body': feedback,
-        'date': timestamp
-      }}}, { upsert: true }, function(err, doc) {
-      if (err) {callback(err); return;}
-      callback(null, doc);
-    });
+    query['lectures.date'] = date;
+    update = {'lectures.$.feedbacks': feedbackBody};
+  } else if (type === 'assignment') {
+    query['assignments.deadline'] = date;
+    update = {'assignments.$.feedbacks': feedbackBody};
+  } else if (type === 'exam') {
+    query['exams.date'] = date;
+    update = {'exams.$.feedbacks': feedbackBody};
   } else {
     callback('Invalid type.');
+    return;
   }
+
+  this.courses.update(query, {'$push': update}, 
+    { upsert: true }, function(err, doc) {
+    if (err) {callback(err); return;}
+    callback(null, doc);
+  });
+
+
 };

@@ -5,8 +5,11 @@ div(data-role='page', id='department-page', data-theme='a')
   div(data-role='content')
 
     ul(data-role='listview', data-filter='true', data-inset='true')
-      li(data-role='list-divider') Select course
-      - each course in courses
+      - var titleText = 'Select course'
+      if (courses.length === 0)
+        titleText = 'No active courses found'
+      li(data-role='list-divider') #{titleText}
+      each course in courses
         li
           a(href="/course/" + course.id)
             span(class='course-id')= course.id.toUpperCase()

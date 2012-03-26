@@ -85,7 +85,7 @@ class Scraper(object):
             else: 
                 return None
 
-    def update_organizations(self):
+    def update_organizations(self, **kwargs):
         ''' Update the list of organizations '''
 
         organizations = []
@@ -121,7 +121,7 @@ class Scraper(object):
 
 
 
-    def update_departments(self):
+    def update_departments(self, **kwargs):
         ''' Update the list of departments 
 
         
@@ -555,7 +555,7 @@ class Scraper(object):
             if flags['exams'] == True:
                 print 'Updating exams...',
                 sys.stdout.flush()
-                #sleep(2)
+                sleep(2)
                 self._update_exams(course_url, soup=soup)
                 print ' Done!'
             if flags['weekly_exercises'] == True:
@@ -575,5 +575,11 @@ class Scraper(object):
             #course_data['weekly_exercises'] = self._update_weekly_exercises(course_url)
             #sleep(2)
             #print ' Done'
+
+    def update_everything(self, **kwargs):
+        self.update_organizations(**kwargs)
+        self.update_departments(**kwargs)
+        self.update_course_lists(**kwargs)
+        
 
 
