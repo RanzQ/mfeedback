@@ -13,7 +13,7 @@ div(data-role='page', id='search-page', data-theme='a')
       else
         each result in results
           li
-            a(href='/course/#{result.id}')= result.title
+            a(href='/course/#{result.id}')= result.id.toUpperCase() + ' - ' + result.title
 
   // /content
 
