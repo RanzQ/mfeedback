@@ -95,7 +95,12 @@ app.getCourse = function(id, callback) {
 };
 
 app.searchCourses = function(term, callback) {
-  // TODO: Implement me
+  var regexp = new RegExp(term, 'i');
+  this.courses.find({'$or': [{'title': regexp}, {'id': regexp}]},
+    function (err, docs) {
+    if (err) {callback(err); return;}
+    callback(null, docs);  
+  });
 };
 
 /**
