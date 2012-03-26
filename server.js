@@ -166,16 +166,69 @@ server._setupRoutes = function() {
         if (error || !course) { res.send(res_404, 404); return; }  
         var context = {
           title: course.id.toUpperCase() + ' - ' + course.title,
-          id: course.id,
-          lectures: course.lectures,
-          assignments: course.assignments,
-          exams: course.exams,
+          course: course,
           dateFormat: dateFormat
         };
         if (req.xhr) {
           res.partial('partials/course_page', context);
         } else {
           res.render('course', context);
+        }
+      });
+    });
+
+    /*
+     * GET course feedback page.
+     */
+
+    app.get('/course/:id/feedback', function(req, res) {
+      var id = req.params.id.toLowerCase();
+      db.getCourse(id, function(error, course) {
+        if (error || !course) { res.send(res_404, 404); return; }  
+        var context = {
+          title: course.id.toUpperCase() + ' - ' + course.title,
+          course: course,
+          dateFormat: dateFormat
+        };
+        if (req.xhr) {
+          res.partial('partials/course_feedback_page', context);
+        } else {
+          res.render('course_feedback', context);
+        }
+      });
+    });
+
+    /*
+     * POST course feedback.
+     */
+
+    app.post('/course/:id/feedback', function(req, res) {
+      var id = req.params.id.toLowerCase()
+        , feedback = req.body.message;
+      db.addFeedback(id, 'course', null, feedback, function(error, result) {
+        if (error || !req.xhr) { res.send(res_404, 404); return; }
+        console.log(result);
+        res.partial('partials/thank_you_page', {title: 'Thank you!'});
+      });
+    });
+
+    /*
+     * GET show feedback page.
+     */
+
+    app.get('/course/:id/show_feedback', function(req, res) {
+      var id = req.params.id.toLowerCase();
+      db.getCourse(id, function(error, course) {
+        if (error || !course) { res.send(res_404, 404); return; }  
+        var context = {
+          title: course.id.toUpperCase() + ' - ' + course.title,
+          course: course,
+          dateFormat: dateFormat
+        };
+        if (req.xhr) {
+          res.partial('partials/show_feedback_page', context);
+        } else {
+          res.render('show_feedback', context);
         }
       });
     });

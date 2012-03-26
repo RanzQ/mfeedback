@@ -1,0 +1,67 @@
+// Start of course page
+div(data-role='page', id='course-page', data-theme='a')
+
+  include header
+
+  div(data-role='content')
+
+    ul(data-role='listview', data-filter='true', data-inset='true')
+
+      li(data-role='list-divider') Course feedback:
+      - var count = 0
+      - each feedback in course.feedbacks
+        - ++count
+        li
+          h4= dateFormat(feedback.date, 'dd mmm yy - HH:mm')+':'
+          p(class='feedback')= feedback.body
+      if count == 0
+        li No course feedback.
+
+      li(data-role='list-divider') Lecture feedback:
+      - count = 0
+      - each lecture in course.lectures
+        if lecture.feedbacks && lecture.feedbacks.length > 0
+          li
+            h4 #{dateFormat(lecture.date, 'dd mmm yy')}: #{lecture.topic}
+            - each feedback in lecture.feedbacks
+              - ++count
+              p(class='feedback')
+                strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:mm')+': '
+                span(class='feedback-body')= feedback.body
+      if count == 0
+        li No lecture feedback.
+
+      li(data-role='list-divider') Assignment feedback:
+      - count = 0
+      - each assignment in course.assignments
+        if assignment.feedbacks && assignment.feedbacks.length > 0
+          li
+            h4 #{assignment.title}
+            - each feedback in assignment.feedbacks
+              - ++count
+              p(class='feedback')
+                strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:mm')+': '
+                span(class='feedback-body')= feedback.body
+      if count == 0
+        li No assignment feedback.
+
+      li(data-role='list-divider') Exam feedback:
+      - count = 0
+      - each exam in course.exams
+        if exam.feedbacks && exam.feedbacks.length > 0
+          li
+            h4 Exam #{dateFormat(exam.date, 'dd mmm yy')}
+            - each feedback in exam.feedbacks
+              - ++count
+              p(class='feedback')
+                strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:mm')+': '
+                span(class='feedback-body')= feedback.body
+      if count == 0
+        li No exam feedback.
+
+
+
+
+ // /content
+
+// End of course page
