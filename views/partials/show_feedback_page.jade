@@ -12,7 +12,7 @@ div(data-role='page', id='course-page', data-theme='a')
       - each feedback in course.feedbacks
         - ++count
         li
-          h4= dateFormat(feedback.date, 'dd mmm yy - HH:mm')+':'
+          h4= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+':'
           p(class='feedback')= feedback.body
       if count == 0
         li No course feedback.
@@ -26,7 +26,7 @@ div(data-role='page', id='course-page', data-theme='a')
             - each feedback in lecture.feedbacks
               - ++count
               p(class='feedback')
-                strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:mm')+': '
+                strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+': '
                 span(class='feedback-body')= feedback.body
       if count == 0
         li No lecture feedback.
@@ -40,7 +40,7 @@ div(data-role='page', id='course-page', data-theme='a')
             - each feedback in assignment.feedbacks
               - ++count
               p(class='feedback')
-                strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:mm')+': '
+                strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+': '
                 span(class='feedback-body')= feedback.body
       if count == 0
         li No assignment feedback.
@@ -54,7 +54,7 @@ div(data-role='page', id='course-page', data-theme='a')
             - each feedback in exam.feedbacks
               - ++count
               p(class='feedback')
-                strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:mm')+': '
+                strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+': '
                 span(class='feedback-body')= feedback.body
       if count == 0
         li No exam feedback.
