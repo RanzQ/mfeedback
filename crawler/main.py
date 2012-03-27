@@ -24,7 +24,7 @@ update_parser.add_argument('-t', '--title', type=str,
 
 update_parser.add_argument('-d', '--department', type=str, help='Deparment ID the course belongs to')
 
-update_parser.add_argument('-a', '--all', action='store_true', default='False',
+update_parser.add_argument('-A', '--all', action='store_true', default='False',
                     help='Shortcut to parse everything')
 
 update_parser.add_argument('-l', '--lectures', action='store_true', default='False',
@@ -36,6 +36,8 @@ update_parser.add_argument('-e', '--exams', action='store_true', default='False'
 update_parser.add_argument('-w', '--weekly-exercises', action='store_true', default='False',
                     help='Flag to toggle weekly exercise parsing')
 
+update_parser.add_argument('-a', '--assignments', action='store_true', default='False',
+                    help='Flag to toggle assignment parsing')
 
 
 scrape_parser = subparsers.add_parser('scrape', help='Scrape data from Noppa')
@@ -88,7 +90,7 @@ if 'exams' not in args:
         task(**vars(args))
 
 else:
-    if not (args.id and args.title and args.department):
+    if not (args.id or args.title or args.department):
         print 'You need to specify at least one argument for update!'
         raise SystemExit
     try:

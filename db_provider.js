@@ -111,7 +111,7 @@ app.searchCourses = function(term, callback) {
   if (term.q && term.q !== '') {
     regexp = new RegExp(term.q, 'i');
     query = [{'title': regexp}, {'id': regexp}]
-    full_query = {'$or': query};
+    full_query = {'isActive':true, '$or': query};
   } else {
     callback('Empty query!', []);
     return;

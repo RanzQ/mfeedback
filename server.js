@@ -438,5 +438,4 @@ server._setupRoutes = function() {
       }
     });
   });
-
 };

@@ -1,3 +1,5 @@
-form(id="search-form", action="/search", method="get")
-    input(type="search", name="q", id="query", placeholder="Quick course search")
-    span(style="display: none;"): input(type="submit", value="Search &raquo;")
+div
+    form(id="search-form", action="/search", method="get")
+        input(type="search", name="q", id="query", placeholder="Quick course search")
+        span(style="display:none;")
+            input(type="submit", value="Go &raquo;")

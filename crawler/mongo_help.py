@@ -25,29 +25,29 @@ def get_utc_from_local(date_time, local_tz=None):
     return local_time.astimezone(pytz.utc)
 
 
-def generate_ISO_date(date_string):
+def generate_ISO_date(date_string, verbose=False):
     date = None
 
     # Remove trailing whitespaces if any
     date_string = date_string.strip()
 
-    if not ('klo' or 'at') in date_string:
-        date_str = date_string
-        time_str = '00.00'
-    else:
+    try:
+        date_str, time_str = date_string.split(' klo ')
+    except ValueError:
         try:
-            date_str, time_str = date_string.split(' klo ')
-
-            # If the date is in finnish format, date_str should be of length 10,
-            # if not, let's try english format
-            if len(date_str) != 10:
-                date_str, time_str = date_string.split(' at ')
-                if len(date_str) != 10:
-                    raise ValueError
-
+            date_str, time_str = date_string.split(' at ')
         except ValueError:
-            print '\nProblem with splitting date and time! '
-            print 'Date given was ', date_string, '\n'
+            #print '\nProblem with splitting date and time! '
+            #print 'Date given was ', date_string, '\n'
+            #print 'Using 00.00 as the time'
+            date_str = date_string
+            time_str = '00.00'
+        else:
+            if verbose:
+                print 'Splitting it as english date!'
+    else:
+        if verbose:
+            print 'Splitting it as finnish date!'
 
     try:
         # If we fail to map int to the date string, it's likely to be in english format
@@ -66,6 +66,13 @@ def generate_ISO_date(date_string):
             print '\nWARN! Could not convert the given date into ISO format!'
             print 'Date given was ', date_string, '\n'
             return date  # which should be None at this point
+    finally:
+        # If the year is more than 2 digits, assume it's not abbreviated
+        if year > 99:
+            pass
+        else:
+            year += 2000 if year < 70 else 1900
+
 
     try:
         # Try to map time to ints
@@ -75,16 +82,11 @@ def generate_ISO_date(date_string):
         print 'Date given was ', date_string, '\n'
         return date  # which should be None at this point
 
-    finally:
-        # If the year is more than 2 digits, assume it's not abbreviated
-        if year > 99:
-            pass
-        else:
-            year += 2000 if year < 70 else 1900
 
-        # Convert to UTC datetime
-        date = get_utc_from_local(datetime(year, month, day, hour, minute),
-            pytz.timezone('Europe/Helsinki'))
+
+    # Convert to UTC datetime
+    date = get_utc_from_local(datetime(year, month, day, hour, minute),
+        pytz.timezone('Europe/Helsinki'))
 
     #print date
     return date
