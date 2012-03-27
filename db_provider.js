@@ -113,16 +113,9 @@ app.searchCourses = function(term, callback) {
     query = [{'title': regexp}, {'id': regexp}]
     full_query = {'$or': query};
   } else {
-    if (term.id && term.id !== '') {
-      query.push({'id': new RegExp(term.id, 'i')});
-    }
-    if (term.title && term.title !== '') {
-      query.push({'title': new RegExp(term.title, 'i')});
-    }
-    full_query = {'$and': query};
+    callback('Empty query!', []);
+    return;
   } 
-
-  
   this.courses.find(full_query,
     function (err, docs) {
     if (err) {callback(err); return;}

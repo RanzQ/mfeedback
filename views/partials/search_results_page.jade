@@ -5,11 +5,14 @@ div(data-role='page', id='search-page', data-theme='a')
   div(data-role='content')
 
     include search_form
-    ul(data-role='listview', data-filter='true', data-inset='true')
+    ul(data-role='listview', data-inset='true')
       li(data-role='list-divider') Search results
       if results.length === 0
         li
-          span No hits for query '#{search_term}', try again
+          if search_term === ''
+            span No search term given
+          else
+            span No hits for query '#{search_term}', try again
       else
         each result in results
           li

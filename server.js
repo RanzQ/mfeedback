@@ -424,25 +424,19 @@ server._setupRoutes = function() {
     var query = req.query
       , db_query = query;
     for (i in query) {
-      if (i !== 'q' && i !== 'id' && i !== 'title') {
+      if (i !== 'q') {
         delete db_query[i];
       }
     }
-    console.log(req.query);
     db.searchCourses(db_query, function(error, result) {
-      if (error) {console.log(error); res.send(res_404, 404); return; }
+      if (error) console.log(error);
       context = {'title': 'Search results', 'results': result, 'search_term': db_query['q']};
       if (req.xhr) {
-        //console.log('THE REQUEST WAS FUCKING AJAX!');
         res.partial('partials/search_results_page', context);
       } else {
-        //console.log('I SURE HOPE WE DO NOT VISIT HERE');
         res.render('search_results', context);
       }
-      
     });
-    
-    //res.render('exam_feedback', {title:'', exam:'', dateFormat:''});
   });
 
 };
