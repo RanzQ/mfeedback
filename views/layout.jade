@@ -1,18 +1,19 @@
 !!! 5
 html
   head
+    - var STATIC_PATH = '/public'
     title= title
     meta(charset='utf-8')
     meta(name='viewport', content='width=device-width, initial-scale=1')
     block styles
-      link(rel='stylesheet', href='/stylesheets/mfeedback-mobile.min.css')
-      link(rel='stylesheet', href='http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile.structure-1.1.0-rc.1.min.css')
-      link(rel='stylesheet', href='/stylesheets/style.css')
+      link(rel='stylesheet', href=STATIC_PATH + '/stylesheets/mfeedback-mobile.min.css')
+      link(rel='stylesheet', href=STATIC_PATH + '/stylesheets/jquery.mobile.structure-1.1.0-rc.1.min.css')
+      link(rel='stylesheet', href=STATIC_PATH + '/stylesheets/style.css')
     block scripts
-      script(type='text/javascript', src='http://code.jquery.com/jquery-1.7.1.min.js')
-      script(type='text/javascript', src='/javascripts/common.js')
-      script(type='text/javascript', src='/javascripts/mfeedback.js')
-      script(type='text/javascript', src='http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile-1.1.0-rc.1.min.js')
+      script(type='text/javascript', src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js')
+      script(type='text/javascript', src=STATIC_PATH + '/javascripts/common.js')
+      script(type='text/javascript', src=STATIC_PATH + '/javascripts/mfeedback.js')
+      script(type='text/javascript', src=STATIC_PATH + '/javascripts/jquery.mobile-1.1.0-rc.1.min.js')
 
   body
     block page

@@ -77,7 +77,7 @@ server._configure = function() {
     app.use(express.session({secret: "O09zC8#KgUZFyBad", store: sessionStore, key: "mfb"}));
     app.use(express.methodOverride());
     //app.use(app.router); // Disabled for mongooseAuth
-    app.use(express.static(__dirname + '/public'));
+    //app.use(express.static(__dirname + '/public'));
     app.use(mongooseAuth.middleware());
 
     app.dynamicHelpers({
