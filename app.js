@@ -2,7 +2,8 @@
  * Module dependencies.
  */
 var Server = require('./server')
-  , DatabaseProvider = require('./db_provider');
+  , DatabaseProvider = require('./db_provider')
+  , fs = require('fs');
 
 var exports = module.exports;
 
@@ -87,9 +88,13 @@ for (var i = 0; i < courses.length; ++i) {
 
 }*/
 
+var options = {
+  key: fs.readFileSync('ssl/server.key'),
+  cert: fs.readFileSync('ssl/server.crt')
+};
 
 // Initialize the express server
-var server = new Server(db);
+var server = new Server(db, options);
 // Server port
 var port = 8080;
 var arg2 = process.argv[2];

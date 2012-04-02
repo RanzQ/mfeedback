@@ -19,9 +19,13 @@ var server = Server.prototype;
 
 var res_404 = '<h1>404 - Not found</h1>';
 
-function Server(db) {
+function Server(db, options) {
   this.db = db;
-  this.express_server = express.createServer();
+  if (options) {
+    this.express_server = express.createServer(options);
+  } else {
+    this.express_server = express.createServer();
+  }
   this._configure();
   this._setupRoutes();
 }
