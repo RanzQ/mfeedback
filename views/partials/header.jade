@@ -3,4 +3,7 @@ div(data-role='header')
     span(class='aalto-logo')
     span= title
   a(href='/', data-role='button', data-icon='home', data-iconpos='notext', data-direction='reverse') Home
-  a(href='#', data-role='button', data-icon='arrow-r', data-iconpos='right') Login
+  if (everyauth.google)
+    a(href='/logout', data-role='button', data-icon='arrow-r', data-iconpos='right') Logout
+  else
+    a(href='/auth/google', data-role='button', data-icon='arrow-r', data-iconpos='right', rel='external', data-ajax='false') Login

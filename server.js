@@ -7,6 +7,7 @@ var express = require('express')
   , stylus = require('stylus')
   , nib = require('nib')
   , mongoStore = require('connect-mongo')
+  , mongooseAuth = require('mongoose-auth')
   , i18n = require("i18n")
   , dateFormat = require('dateformat');
 
@@ -24,6 +25,7 @@ function Server(db) {
   this.express_server = express.createServer();
   this._configure();
   this._setupRoutes();
+  mongooseAuth.helpExpress(this.express_server);
 }
 
 server.listen = function(port) {
@@ -70,8 +72,9 @@ server._configure = function() {
     sessionStore = new mongoStore({ db: db.getDatabaseName() });
     app.use(express.session({secret: "O09zC8#KgUZFyBad", store: sessionStore, key: "mfb"}));
     app.use(express.methodOverride());
-    app.use(app.router);
+    //app.use(app.router); // Disabled for mongooseAuth
     app.use(express.static(__dirname + '/public'));
+    app.use(mongooseAuth.middleware());
 
     app.dynamicHelpers({
       isDevMode: function (req, res) {
@@ -103,6 +106,15 @@ server._setupRoutes = function() {
           res.render('index', context);
         }
       });
+    });
+
+    /*
+     * Logout.
+     */
+
+    app.get('/logout', function (req, res) {
+      req.logout();
+      res.redirect('/');
     });
 
     /*

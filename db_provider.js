@@ -1,4 +1,5 @@
-var mongoose = require('mongoose');
+var mongoose = require('mongoose')
+  , mongooseAuth = require('mongoose-auth');
 
 exports = module.exports = DatabaseProvider;
 
@@ -10,6 +11,31 @@ function DatabaseProvider(dbName) {
   mongoose.connect('mongodb://localhost/' + dbName);
 
   var Schema = mongoose.Schema;
+
+
+  var UserSchema = new Schema({})
+    , User;
+
+  UserSchema.plugin(mongooseAuth, {
+
+      everymodule: {
+        everyauth: {
+            User: function () {
+              return User;
+            }
+        }
+      }
+
+    , google: {
+        everyauth: {
+            myHostname: 'http://localhost:8080'
+          , appId: '74200445392.apps.googleusercontent.com'
+          , appSecret: 'dgHPFwwZM3hXDSscjgus6cAY'
+          , redirectPath: '/'
+          , scope: 'https://www.googleapis.com/auth/userinfo.profile'
+        }
+      }
+  });
 
   var FeedbackSchema = new Schema({
         date : { type: Date, index: true, 'default': Date.now },
@@ -53,6 +79,9 @@ function DatabaseProvider(dbName) {
   this.organizations = mongoose.model('Organization', OrganizationSchema);
   this.departments = mongoose.model('Department', DepartmentSchema);
   this.courses = mongoose.model('Course', CourseSchema);
+
+  User = mongoose.model('User', UserSchema);
+  this.users = User;
 
 }
 
