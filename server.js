@@ -45,7 +45,7 @@ server._configure = function() {
   app.configure('development', function() {
     var stylusMiddleware = stylus.middleware({
       src: __dirname + '/stylus/', // .styl files are located in `/stylus`, must match /public folder structure
-      dest: __dirname + '/public/', // .styl resources are compiled `/stylesheets/*.css`
+      dest: __dirname, // .styl resources are compiled `public/stylesheets/*.css`
       debug: true,
       compile: function(str, path) { // optional, but recommended
         return stylus(str)
@@ -77,7 +77,7 @@ server._configure = function() {
     app.use(express.session({secret: "O09zC8#KgUZFyBad", store: sessionStore, key: "mfb"}));
     app.use(express.methodOverride());
     //app.use(app.router); // Disabled for mongooseAuth
-    //app.use(express.static(__dirname + '/public'));
+    app.use('/public', express.static(__dirname + '/public'));
     app.use(mongooseAuth.middleware());
 
     app.dynamicHelpers({
@@ -119,6 +119,14 @@ server._setupRoutes = function() {
     app.get('/logout', function (req, res) {
       req.logout();
       res.redirect('/');
+    });
+
+    /*
+     * Redirect for favicon.
+     */
+
+    app.get('/favicon.ico', function (req, res) {
+      res.redirect('/public/favicon.ico');
     });
 
     /*
