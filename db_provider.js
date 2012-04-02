@@ -28,7 +28,7 @@ function DatabaseProvider(dbName) {
 
     , google: {
         everyauth: {
-            myHostname: 'http://localhost:8080'
+            myHostname: 'https://localhost:8080'
           , appId: '74200445392.apps.googleusercontent.com'
           , appSecret: 'dgHPFwwZM3hXDSscjgus6cAY'
           , redirectPath: '/'
