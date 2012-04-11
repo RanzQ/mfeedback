@@ -10,9 +10,9 @@ parser.add_argument('-E', '--ensure-indexes', action='store_true', default='True
 parser.add_argument('-v', '--verbose', action='store_true', default='False',
                     help='Print some useless info')
 
-subparsers = parser.add_subparsers(help='sub-command help')
+subparsers = parser.add_subparsers(help='sub-command help', dest='command')
 
-update_parser = subparsers.add_parser('update', 
+update_parser = subparsers.add_parser('update',
     help=('Update previously scraped data.' 
     ' NOTE: You need to scrape the data before updating it!'))
 
@@ -24,8 +24,8 @@ update_parser.add_argument('-t', '--title', type=str,
 
 update_parser.add_argument('-d', '--department', type=str, help='Deparment ID the course belongs to')
 
-update_parser.add_argument('-A', '--all', action='store_true', default='False',
-                    help='Shortcut to parse everything')
+# update_parser.add_argument('-A', '--all', action='store_true', default='True',
+#                     help='Shortcut to parse everything')
 
 update_parser.add_argument('-l', '--lectures', action='store_true', default='False',
                     help='Flag to toggle lecture parsing')
@@ -67,28 +67,8 @@ print args
 
 scraper = Scraper(**vars(args))
 update_args = {}
-if 'exams' not in args:
-    tasks = []
-    parsed = False
-    print 'Scraping stuff'
-    #if args.all == True:
-    #    args.organizations = True
-    #    args.departments = True
-    #    args.courses = True
-    if args.organizations == True:
-        tasks.append(scraper.update_organizations)
-    if args.departments == True:
-        tasks.append(scraper.update_departments)
-    if args.courses == True:
-        tasks.append(scraper.update_course_lists)
-
-    if len(tasks) == 0:
-        scraper.update_everything(**vars(args))
-        raise SystemExit
-    
-    for task in tasks:
-        task(**vars(args))
-
+if args.command == 'scrape':
+    scraper.scrape_data(**vars(args))
 else:
     if not (args.id or args.title or args.department):
         print 'You need to specify at least one argument for update!'
@@ -97,12 +77,4 @@ else:
         scraper.update_courses(**vars(args))
     except KeyboardInterrupt:
         print '\nInterrupted!', 'Exiting'
-    #answer = None
-    #while answer not in ['yes', 'y', 'no', 'n', '']:
-    #    answer = str(raw_input('Save the partial json? y/[n]'))
-    #
-    #if answer in ['yes', 'y']:
-    #    print 'Dumping the results'
-    #    crawler.dumpJson()
-    #else:
-    #    print 'Nothing to dump, exiting...'
+

@@ -40,7 +40,7 @@ class Scraper(object):
         connection = Connection()
 
         # Select the collection from db
-        self._db = connection['mfeedback']
+        self._db = connection['mfeedback2']
 
         collections = [
             {'name': 'feedback', 'fields': ['courseId', 'targetId']},
@@ -128,17 +128,14 @@ class Scraper(object):
 
 
     def update_departments(self, **kwargs):
-        ''' Update the list of departments 
-
-        
-        '''
+        ''' Update the list of departments '''
 
         organizations = self._db.organizations.find()
 
         for organization in organizations:
             # Make an new empty array for the departments
             # departments = []
-        
+
             organization_id = organization['id']
             href = organization['href']
 
@@ -147,13 +144,13 @@ class Scraper(object):
             res = self._urlopen(full_url)
 
             soup = BeautifulSoup(res.read())
-            
+
             for link in soup.find_all(href=self._courses_re):
                 #print link.get_text()
                 #print link.get('href')
                 href = link.get('href')
                 department_id = href.split('/')[-1]
-                
+
                 department = {
                     'organization': organization_id,
                     'title': link.get_text(strip=True),
@@ -164,14 +161,13 @@ class Scraper(object):
                 self._db.departments.update({'id': department_id}, department,
                     safe=True, upsert=True)
 
-            
 
-            # Sleep for a second or two so we don't have to explain why we're DOSing Noppa with request spam
+
+            # Sleep for a second or two so we don't have to 
+            # explain why we're DOSing Noppa with request spam
             sleep(2)
 
-                
 
-        #self.dumpJson()
 
     def _extract_courses(self, res, department_id, organization_id):
         ''' Extract courses from the response '''
@@ -189,14 +185,12 @@ class Scraper(object):
                 'id': course_id,
                 'department': department_id,
                 'organization': organization_id
-            } 
+            }
 
             self._db.courses.update({'id': course_id}, {'$set': course},
                 safe=True, upsert=True)
 
-            #courses.append(course)
 
-        #return courses
 
     def _find_department(self, lookup_string):
         ''' Find a single department matching the lookup string '''
@@ -207,7 +201,7 @@ class Scraper(object):
 
     def update_department_course_list(self, department_lookup_string):
         ''' Update the course list for a single department '''
-        
+
         department = self._find_department(department_lookup_string)
         if not department:
             return
@@ -223,39 +217,38 @@ class Scraper(object):
         self._extract_courses(res, department_id, organization_id)
 
 
-    """def find_course(self, keyword):
-        noppa_search_url = 'https://noppa.aalto.fi/noppa/haku/{}'.format(keyword)
-        res = self._urlopen(noppa_search_url)
+    # def find_course(self, keyword):
+    #     noppa_search_url = 'https://noppa.aalto.fi/noppa/haku/{}'.format(keyword)
+    #     res = self._urlopen(noppa_search_url)
 
-        soup = BeautifulSoup(res.read())
+    #     soup = BeautifulSoup(res.read())
 
-        # The search results are in a table with id crsTableView
-        courses_view = soup.find(id='crsTableView')
-        try:
-            # Reuse the lecture_re because were lazy and incompetent
-            tbody = courses_view.tbody.find_all(id=self._lecture_re)
-        except AttributeError:
-            print '* WARN * COULD NOT FIND ANY COURSES'
-            return
+    #     # The search results are in a table with id crsTableView
+    #     courses_view = soup.find(id='crsTableView')
+    #     try:
+    #         # Reuse the lecture_re because were lazy and incompetent
+    #         tbody = courses_view.tbody.find_all(id=self._lecture_re)
+    #     except AttributeError:
+    #         print '* WARN * COULD NOT FIND ANY COURSES'
+    #         return
 
-        print tbody
-        for tr in tbody:
+    #     print tbody
+    #     for tr in tbody:
 
-            id = tr.find_next('td').get_text(strip=True)
-            href = tr.find_next('a').get('href')
-            print id
-            print href"""
-          
+    #         id = tr.find_next('td').get_text(strip=True)
+    #         href = tr.find_next('a').get('href')
+    #         print id
+    #         print href
+
     def update_course_lists(self, **kwargs):
         ''' Update every course list in every department '''
-            
-        
+
         search_args = {}
         for key in kwargs:
             if key in ['id', 'title'] and kwargs[key] is not None:
                 search_args[key] = re.compile(re.escape(kwargs[key]), re.I)
 
-        
+
         departments = self._db.departments.find(search_args)
 
 
@@ -265,7 +258,7 @@ class Scraper(object):
         # silly fix to add correct amount of spaces and backspaces
         s = '  ' if count < 10 else '   '
         print "Departments left to process:{}".format(s),
-        
+
 
         b = ''
         for department in departments:
@@ -280,19 +273,19 @@ class Scraper(object):
             #courses = data['courses']     
 
             full_url = self._noppa_url + href
-        
+
             res = self._urlopen(full_url)
 
             self._extract_courses(res, department_id, organization_id)            
 
-    
+
             # Sleep 2 seconds to avoid too many HTTP requests/second to noppa
             sleep(2)
-        
+
         # Clear the number out of the console and replace it with done message
         print '{}Done!'.format(b)
 
-      
+
 
 
     def _find_courses(self, **kwargs):
@@ -316,7 +309,7 @@ class Scraper(object):
         res = self._urlopen(course_url + '/luennot', exit_on_fail=False)
         if not res:
             return []
-        
+
         soup = BeautifulSoup(res.read())
 
 
@@ -449,7 +442,7 @@ class Scraper(object):
             res = self._urlopen(course_url + '/etusivu', exit_on_fail=False)
             if not res:
                 return []
-        
+
             soup = BeautifulSoup(res.read())
 
         course_id = course_url.split('/')[-1]
@@ -463,7 +456,7 @@ class Scraper(object):
 
         #tr = exams_table.find_all('tr')
         #columns = len(tr.find_all('td'))
-        
+
         # These are hard coded since they aren't visible anywhere on the site
         labels = ['day', 'date', 'time', 'place', 'title'] 
 
@@ -486,7 +479,7 @@ class Scraper(object):
                 else:
                     data[label] = text
 
-                
+
 
 
             exam_data.append(data)
@@ -507,16 +500,19 @@ class Scraper(object):
     def update_courses(self, **kwargs):
         ''' Update a single course completely (isActive, lectures, exams etc) '''
 
+        update_targets = ['lectures', 'exams', 'weekly_exercises', 'assignments']
+
         search_args = {}
+        update_args = {}
         for key, value in kwargs.iteritems():
             if key in ['id', 'title', 'department'] and value is not None:
                 search_args[key] = value
-            elif key == 'all' and value == True:
-                kwargs['lectures'] = True
-                kwargs['exams'] = True
-                kwargs['weekly_exercises'] = True
-                kwargs['assignments'] = True
-        
+            elif key in update_targets and value is True:
+                update_args[key] = True
+
+        if len(update_args) == 0:
+            for target in update_targets:
+                update_args[target] = True
 
         #course_lookup_data = course_lookup_data.lower()
         courses = self._find_courses(**search_args)
@@ -529,14 +525,14 @@ class Scraper(object):
             return
 
         for i, course in enumerate(courses):
-            self._update(course, i, total, **kwargs)
+            self._update(course, i+1, total, **update_args)
 
-    def _update(self, course, i, total, **kwargs):
+    def _update(self, course, index, total, **kwargs):
         course_code = course['id']
 
         course_url = self._noppa_url + self._course_url + course_code
-        i += 1
-        print u'Updating {} ({}) [{}/{}]'.format(course['title'], course['id'], i, total)
+
+        print u'Updating {} ({}) [{}/{}]'.format(course['title'], course['id'], index, total)
         print course_url
 
         res = self._urlopen(course_url)
@@ -570,22 +566,34 @@ class Scraper(object):
             #    sleep(2)
             #    print ' Done!'
             if flags['assignments'] == True:
-                print 'Would now update assignments....',
+                print 'Updating assignments...',
                 sys.stdout.flush()
                 self._update_assignments(course_url)
                 sleep(2)
                 print ' Done!'
             print 'Done updating the course!\n'
-            #print 'Updating weekly exercises...',
-            #sys.stdout.flush()
-            #course_data['weekly_exercises'] = self._update_weekly_exercises(course_url)
-            #sleep(2)
-            #print ' Done'
 
-    def update_everything(self, **kwargs):
-        self.update_organizations(**kwargs)
-        self.update_departments(**kwargs)
-        self.update_course_lists(**kwargs)
-        
+    def scrape_data(self, **kwargs):
+        tasks = []
+
+        print 'Scraping stuff'
+        if kwargs['organizations'] == True:
+            tasks.append(self.update_organizations)
+        if kwargs['departments'] == True:
+            tasks.append(self.update_departments)
+        if kwargs['courses'] == True:
+            tasks.append(self.update_course_lists)
+
+        if len(tasks) == 0:
+            self.update_organizations(**kwargs)
+            self.update_departments(**kwargs)
+            self.update_course_lists(**kwargs)
+            return
+
+        for task in tasks:
+            task(**kwargs)
+
+
+
 
 
