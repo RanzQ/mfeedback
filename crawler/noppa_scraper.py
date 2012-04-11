@@ -55,7 +55,7 @@ class Scraper(object):
 
         self.courselist_url = self._noppa_url + self._courses_url
     
-        # Compile some regular expressions
+        # Compile some regular expressions for various purposes
         # Regex to match urls such as /noppa/kurssit/taik/a802
         self._courses_re = re.compile('^{}\w+\/\w+'.format(self._courses_url))
 
@@ -69,6 +69,12 @@ class Scraper(object):
         self._lecture_re = re.compile('^informal')
         # The table headers will have an ID starting with "linkColumn"
         self._header_re = re.compile('^linkColumn')
+
+        # The exam table regex
+        self._exam_table_re = re.compile(u'Tentit ja välikokeet|Exams and mid-term exams', re.I)
+
+        # The exam table rows regex
+        self._exam_table_row_re = re.compile('even|odd')
 
     
 
@@ -450,7 +456,7 @@ class Scraper(object):
 
         #print soup.prettify() (Exams and mid-term exams)|
         try:
-            exams_table = soup.find(text=re.compile(u'Tentit ja välikokeet|Exams and mid-term exams', re.I)).find_next('table')
+            exams_table = soup.find(text=self._exam_table_re).find_next('table')
         except AttributeError:
             print 'Couldn\'t locate the exams table!!!'
             return []
@@ -462,7 +468,7 @@ class Scraper(object):
         labels = ['day', 'date', 'time', 'place', 'title'] 
 
         exam_data = []
-        for tr in exams_table.find_all('tr'):
+        for tr in exams_table.find_all('tr', {'class': self._exam_table_row_re}):
 
             data = {}
             for i, td in enumerate(tr.find_all('td')):
@@ -558,11 +564,11 @@ class Scraper(object):
                 sleep(2)
                 self._update_exams(course_url, soup=soup)
                 print ' Done!'
-            if flags['weekly_exercises'] == True:
-                print 'Would now update exercises....',
-                sys.stdout.flush()
-                sleep(2)
-                print ' Done!'
+            #if flags['weekly_exercises'] == True:
+            #    print 'Would now update exercises....',
+            #    sys.stdout.flush()
+            #    sleep(2)
+            #    print ' Done!'
             if flags['assignments'] == True:
                 print 'Would now update assignments....',
                 sys.stdout.flush()
