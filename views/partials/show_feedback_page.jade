@@ -8,56 +8,63 @@ div(data-role='page', id='course-page', data-theme='a')
     ul(data-role='listview', data-filter='true', data-inset='true')
 
       li(data-role='list-divider') Course feedback:
-      - var count = 0
-      - each feedback in course.feedbacks
-        - ++count
-        li
-          h4= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+':'
-          p(class='feedback')= feedback.body
-      if count == 0
+      - var hasFeedback = false;
+      if course.feedbacks && course.feedbacks.length > 0
+        each feedback in course.feedbacks
+          li
+            h4= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+':'
+            p(class='feedback')= feedback.body
+      else
         li No course feedback.
 
       li(data-role='list-divider') Lecture feedback:
-      - count = 0
-      - each lecture in course.lectures
+
+      each lecture in course.lectures
+
         if lecture.feedbacks && lecture.feedbacks.length > 0
+          - hasFeedback = true
           li
             h4 #{dateFormat(lecture.date, 'dd mmm yy')}: #{lecture.topic}
-            - each feedback in lecture.feedbacks
-              - ++count
+            each feedback in lecture.feedbacks
               p(class='feedback')
                 strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+': '
                 span(class='feedback-body')= feedback.body
-      if count == 0
+      if !hasFeedback
         li No lecture feedback.
+      else
+        - hasFeedback = false
 
       li(data-role='list-divider') Assignment feedback:
-      - count = 0
-      - each assignment in course.assignments
+
+      each assignment in course.assignments
         if assignment.feedbacks && assignment.feedbacks.length > 0
+          - hasFeedback = true
           li
             h4 #{assignment.title}
-            - each feedback in assignment.feedbacks
-              - ++count
+            each feedback in assignment.feedbacks
               p(class='feedback')
                 strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+': '
                 span(class='feedback-body')= feedback.body
-      if count == 0
+      if !hasFeedback
         li No assignment feedback.
+      else
+        - hasFeedback = false
 
       li(data-role='list-divider') Exam feedback:
-      - count = 0
-      - each exam in course.exams
+
+      each exam in course.exams
         if exam.feedbacks && exam.feedbacks.length > 0
+          - hasFeedback = true
           li
             h4 Exam #{dateFormat(exam.date, 'dd mmm yy')}
-            - each feedback in exam.feedbacks
-              - ++count
+            each feedback in exam.feedbacks
               p(class='feedback')
                 strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+': '
                 span(class='feedback-body')= feedback.body
-      if count == 0
+      if !hasFeedback
         li No exam feedback.
+      else
+        - hasFeedback = false
 
 
 
