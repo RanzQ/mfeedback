@@ -1,11 +1,13 @@
 // Start of course page
-div(data-role='page', id='course-page', data-theme='a')
+div(data-role='page', id='course-page', data-theme='a', data-add-back-btn="false")
 
   include header
 
   div(data-role='content')
 
-    h1 Thank you!
+    h1 Feedback received, thank you!
+    a(href="#", id='customBack', data-role='button', data-icon='home',  data-iconpos='notext', data-direction='reverse') Go back
+
 
   // /content
 
