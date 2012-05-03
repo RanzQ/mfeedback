@@ -12,10 +12,8 @@ function DatabaseProvider(dbName) {
   this.dbName = dbName;
   mongoose.connect('mongodb://localhost/' + dbName);
 
-  var Schema = mongoose.Schema;
-
-
-  var UserSchema = new Schema({})
+  var Schema = mongoose.Schema
+    , UserSchema = new Schema({})
     , User;
 
   UserSchema.plugin(mongooseAuth, {
@@ -47,7 +45,7 @@ function DatabaseProvider(dbName) {
         },
         'body' : String
       })
-  
+
     , LectureSchema = new Schema({
         'course': {
           'type': String,
@@ -148,9 +146,7 @@ function DatabaseProvider(dbName) {
   this.assignments = mongoose.model('Assignment', AssignmentSchema);
   this.lectures = mongoose.model('Lecture', LectureSchema);
   this.feedback = mongoose.model('Feedback', FeedbackSchema);
-
-  User = mongoose.model('User', UserSchema);
-  this.users = User;
+  this.users = mongoose.model('User', UserSchema);
 
 }
 
