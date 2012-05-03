@@ -11,19 +11,21 @@ div(data-role='page', id='course-page', data-theme='a')
       div(data-role='collapsible')
         h3 Lectures
         ul(data-role='listview', data-inset='true')
-          - each lecture in course.lectures
+          each lecture in course.lectures
             li: a(href='/course/#{course.id}/lecture/#{dateFormat(lecture.date, 'yyyymmdd')}')
               |#{dateFormat(lecture.date, 'dd mmm yy')}: #{lecture.topic}
       div(data-role='collapsible')
         h3 Assignments
         ul(data-role='listview', data-inset='true')
-          - each assignment in course.assignments
+          //- course.assignments
+          each assignment in course.assignments
             li: a(href='/course/#{course.id}/assignment/#{dateFormat(assignment.deadline, 'yyyymmddHHMM')}')
               |#{assignment.title} (DL: #{dateFormat(assignment.deadline, 'dd mmm yy')})
       div(data-role='collapsible')
         h3 Exams
         ul(data-role='listview', data-inset='true')
-          - each exam in course.exams
+          //- course.exams
+          each exam in course.exams
             li: a(href='/course/#{course.id}/exam/#{dateFormat(exam.date, 'yyyymmdd')}')
               |Exam: #{dateFormat(exam.date, 'dd mmm yy')}
 

@@ -186,7 +186,7 @@ server._setupRoutes = function() {
 
     app.get('/course/:id', function(req, res) {
       var id = req.params.id.toLowerCase();
-      db.getCourse(id, function(error, course) {
+      db.getCourse({'courseId': id, 'populateEvents': true}, function(error, course) {
         if (error || !course) { res.send(res_404, 404); return; }  
         var context = {
           title: course.id.toUpperCase() + ' - ' + course.title,
@@ -207,7 +207,7 @@ server._setupRoutes = function() {
 
     app.get('/course/:id/feedback', function(req, res) {
       var id = req.params.id.toLowerCase();
-      db.getCourse(id, function(error, course) {
+      db.getCourse({'courseId': id}, function(error, course) {
         if (error || !course) { res.send(res_404, 404); return; }  
         var context = {
           title: course.id.toUpperCase() + ' - ' + course.title,
@@ -242,7 +242,7 @@ server._setupRoutes = function() {
 
     app.get('/course/:id/show_feedback', function(req, res) {
       var id = req.params.id.toLowerCase();
-      db.getCourse(id, function(error, course) {
+      db.getCourse({courseId: id, populateEvents: true}, function(error, course) {
         if (error || !course) { res.send(res_404, 404); return; }  
         var context = {
           title: course.id.toUpperCase() + ' - ' + course.title,
@@ -271,16 +271,10 @@ server._setupRoutes = function() {
       date.setFullYear(y,m-1,d);
       date.setHours(0, 0, 0, 0);
 
-      db.getCourse(id, function(error, course) {
-        if (error || !course) { res.send(res_404, 404); return; }
-        var lecture = null;
-        for (var i in course.lectures) {
-          var l = course.lectures[i];
-          if (dateFormat(date, 'yyyymmdd') == dateFormat(l.date, 'yyyymmdd')) lecture = l;
-        }
-        if (!lecture) { res.send(res_404, 404); return; } 
+      db.getLecture({'courseId': id, 'date':date}, function(error, lecture) {
+        if (error || !lecture) { res.send(res_404, 404); return; }
         var context = {
-          title: course.id.toUpperCase() + ' - Lecture ' + dateFormat(lecture.date, 'dd mmm yy'),
+          title: id.toUpperCase() + ' - Lecture ' + dateFormat(lecture.date, 'dd mmm yy'),
           lecture: lecture,
           dateFormat: dateFormat
         };
@@ -308,8 +302,8 @@ server._setupRoutes = function() {
       date.setHours(0, 0, 0, 0);
 
       db.addFeedback(courseId, 'lecture', date, feedback, function(error, result) {
-        if (error || !req.xhr) { res.send(res_404, 404); return; }
         console.log(result);
+        if (error || !req.xhr) { res.send(res_404, 404); return; }
         res.partial('partials/thank_you_page', {title: 'Thank you!'});
       });
     });
@@ -331,16 +325,11 @@ server._setupRoutes = function() {
       date.setFullYear(y,m-1,d);
       date.setHours(h, min, 0, 0);
 
-      db.getCourse(id, function(error, course) {
-        if (error || !course) { res.send(res_404, 404); return; } 
-        var assignment = null;
-        for (var i in course.assignments) {
-          var a = course.assignments[i];
-          if (dateFormat(date, 'yyyymmdd') == dateFormat(a.deadline, 'yyyymmdd')) assignment = a;
-        }
-        if (!assignment) { res.send(res_404, 404); return; } 
+      db.getAssignment({'courseId': id, 'date': date}, function(error, assignment) {
+        if (error || !assignment) { res.send(res_404, 404); return; } 
+
         var context = {
-          title: course.id.toUpperCase() + ' - ' + assignment.title,
+          title: id.toUpperCase() + ' - ' + assignment.title,
           assignment: assignment,
           dateFormat: dateFormat
         };
@@ -390,18 +379,11 @@ server._setupRoutes = function() {
       date.setFullYear(y,m-1,d);
       date.setHours(0, 0, 0, 0);
 
-      db.getCourse(id, function(error, course) {
-        if (error || !course) { res.send(res_404, 404); return; } 
-        var exam = null;
-        for (var i in course.exams) {
-          var e = course.exams[i];
-          if (dateFormat(date, 'yyyymmdd') == dateFormat(e.date, 'yyyymmdd')) exam = e;
-        }
-        if (!exam) {
-          res.send(res_404, 404);
-        } 
+      db.getExam({'courseId': id, 'date': date}, function(error, exam) {
+        if (error || !exam) { res.send(res_404, 404); return; } 
+
         var context = {
-          title: course.id.toUpperCase() + ' - Exam ' + dateFormat(exam.date, 'dd mmm yy'),
+          title: id.toUpperCase() + ' - Exam ' + dateFormat(exam.date, 'dd mmm yy'),
           exam: exam,
           dateFormat: dateFormat
         };

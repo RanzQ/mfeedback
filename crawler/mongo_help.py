@@ -73,7 +73,6 @@ def generate_ISO_date(date_string, verbose=False):
         else:
             year += 2000 if year < 70 else 1900
 
-
     try:
         # Try to map time to ints
         hour, minute = map(int, time_str.split('.'))
@@ -81,8 +80,6 @@ def generate_ISO_date(date_string, verbose=False):
         print '\nWARN! Problem with reading time!'
         print 'Date given was ', date_string, '\n'
         return date  # which should be None at this point
-
-
 
     # Convert to UTC datetime
     date = get_utc_from_local(datetime(year, month, day, hour, minute),

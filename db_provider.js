@@ -1,5 +1,7 @@
 var mongoose = require('mongoose')
-  , mongooseAuth = require('mongoose-auth');
+  , mongooseAuth = require('mongoose-auth')
+  , ObjectId = require('mongoose').Types.ObjectId; 
+
 
 exports = module.exports = DatabaseProvider;
 
@@ -42,29 +44,33 @@ function DatabaseProvider(dbName) {
         body : String
     })
     , LectureSchema = new Schema({
+        course: {type: String, index: true},
+        _parent: {type: Schema.ObjectId, ref: 'Course'},
         topic     : String
-      , date      : { type: Date, index: true }
-      , feedbacks : [FeedbackSchema]
+      , date      : { type: Date, index: true },
+        feedbacks: [FeedbackSchema]
     })
     , AssignmentSchema = new Schema({
+        course: {type: String, index: true},
         number  : { type: Number, min: 1, index: true }
       , title     : String
-      , deadline  : Date
-      , feedbacks : [FeedbackSchema]
+      , deadline  : Date,
+        feedbacks: [FeedbackSchema]
     })
     , ExamSchema = new Schema({
-        date      : { type: Date, index: true }
-      , feedbacks : [FeedbackSchema]
+        course: {type: String, index: true},
+        date      : { type: Date, index: true },
+        feedbacks: [FeedbackSchema]
     })
     , CourseSchema = new Schema({
         title       : String
       , id          : { type: String, index: true, unique: true }
       , department  : { type: String, index: true }
-      , isActive    : Boolean
-      , lectures    : [LectureSchema]
-      , assignments : [AssignmentSchema]
-      , exams       : [ExamSchema]
-      , feedbacks   : [FeedbackSchema]
+      , isActive    : Boolean,
+        feedbacks: [FeedbackSchema],
+        lectures: [LectureSchema],
+        exams: [ExamSchema],
+        assignments: [AssignmentSchema]
     })
     , DepartmentSchema = new Schema({
         title        : String
@@ -79,6 +85,10 @@ function DatabaseProvider(dbName) {
   this.organizations = mongoose.model('Organization', OrganizationSchema);
   this.departments = mongoose.model('Department', DepartmentSchema);
   this.courses = mongoose.model('Course', CourseSchema);
+  this.exams = mongoose.model('Exam', ExamSchema);
+  this.assignments = mongoose.model('Assignment', AssignmentSchema);
+  this.lectures = mongoose.model('Lecture', LectureSchema);
+  this.feedback = mongoose.model('Feedback', FeedbackSchema);
 
   User = mongoose.model('User', UserSchema);
   this.users = User;
@@ -114,19 +124,101 @@ app.getCoursesByDepartment = function(depId,  activeOnly, callback) {
   if (activeOnly === true) {
     query.isActive = true;
   }
-  console.log(query)
+  console.log(query);
   this.courses.find(query, function (err, docs) {
     if (err) {callback(err); return;}
     callback(null, docs);  
   });
 };
 
-app.getCourse = function(id, callback) {
+// app.getCourse = function(id, callback) {
+//   this.courses.findOne({'id': id}, function(err, doc) {
+//     if (err) {callback(err); return;}
+//     callback(null, doc);  
+//   });
+// };
+
+app.getCourse = function(options, callback) {
+  var self = this
+    , cb = callback
+    , id = options.courseId;
+
+    console.log(options);
+
   this.courses.findOne({'id': id}, function(err, doc) {
-    if (err) {callback(err); return;}
-    callback(null, doc);  
+    if (err || !doc) {callback(err); return;}
+
+    var course = doc;
+    if (options.populateEvents === true) {
+      populateEvents(self, course, callback);
+    } else {
+      callback(null, course);
+    }
   });
 };
+
+function populateEvents(self, course, callback) {
+  self.assignments.find({'_parent': course._id}, function(err, doc) {
+    course.assignments = doc;
+    self.exams.find({'_parent': course._id}, function(err, doc) {
+      course.exams = doc;
+      self.lectures.find({'_parent': course._id}, function(err, doc) {
+        course.lectures = doc;
+        console.log(course);
+        callback(null, course);
+      });
+    });
+  });
+}
+
+app.getLecture = function(options, callback) {
+  var date = options.date
+    , courseId = options.courseId
+    , self = this;
+  this.courses.findOne({'id': courseId}, function(err, doc){
+    if (err || !doc) {callback(err); return;}
+      self.lectures.findOne({'_parent': doc._id, 'date': date})
+      .run(function(err, doc) {
+        if (err || !doc) {callback(err); return;}
+        callback(null, doc);
+      });
+  });
+};
+
+app.getExam = function(options, callback) {
+  var date = options.date
+    , courseId = options.courseId
+    , self = this;
+  this.courses.findOne({'id': courseId}, function(err, doc){
+    if (err || !doc) {callback(err); return;}
+      self.exams.findOne({'_parent': doc._id, 'date': date})
+      .run(function(err, doc) {
+        if (err || !doc) {callback(err); return;}
+        callback(null, doc);
+      });
+  });
+};
+
+app.getAssignment = function(options, callback) {
+  var date = options.date
+    , courseId = options.courseId
+    , self = this;
+  this.courses.findOne({'id': courseId}, function(err, doc){
+    if (err || !doc) {callback(err); return;}
+      self.assignments.findOne({'_parent': doc._id, 'deadline': date})
+      .run(function(err, doc) {
+        if (err || !doc) {callback(err); return;}
+        callback(null, doc);
+      });
+  });
+};
+
+// app.getLecture = function(id, date, callback) {
+//   this.lectures.findOne({'course': id, 'date': date}, function(err, doc) {
+//     if (err) {callback(err); return;}
+//     callback(null, doc);
+//   });
+// };
 
 app.searchCourses = function(term, callback) {
   var regexp = null
@@ -139,7 +231,7 @@ app.searchCourses = function(term, callback) {
 
   if (term.q && term.q !== '') {
     regexp = new RegExp(term.q, 'i');
-    query = [{'title': regexp}, {'id': regexp}]
+    query = [{'title': regexp}, {'id': regexp}];
     full_query = {'isActive':true, '$or': query};
   } else {
     callback('Empty query!', []);
@@ -229,38 +321,61 @@ app.addExam = function(courseId, exam, callback) {
 /**
  * Add feedback
  * 
- *      @param {String} courseId - id of the course
+ *      @param {String} courseId - the id of the course
  *      @param {String} type - 'lecture', 'assignment' or 'exam'
  *      @param {String} date - date or deadline
  *      @param {String} feedback - feedback text
  */
 app.addFeedback = function(courseId, type, date, feedback, callback) {
-  timestamp = new Date();
-  var query = {'id': courseId};
-  var feedbackBody = {'body': feedback, 'date': timestamp};
-  var update = null;
+  var timestamp = new Date()
+    , self = this
+    , feedbackBody = {'body': feedback, 'date': timestamp}
+    , update_query = {'$push': {'feedbacks': feedbackBody}}
+    , callback_handler = function(err, doc) {
+        callback(err, doc);
+      };
+
   if (type === 'course') {
-    update = {'feedbacks': feedbackBody};
-  } else if (type === 'lecture') {
-    console.log(date);
-    query['lectures.date'] = date;
-    update = {'lectures.$.feedbacks': feedbackBody};
-  } else if (type === 'assignment') {
-    query['assignments.deadline'] = date;
-    update = {'assignments.$.feedbacks': feedbackBody};
-  } else if (type === 'exam') {
-    query['exams.date'] = date;
-    update = {'exams.$.feedbacks': feedbackBody};
-  } else {
-    callback('Invalid type.');
-    return;
+    self.courses.findOne({'id': courseId}, {'_id': 1}, function() { 
+      console.log('Implement me!');
+      return;
+    });
   }
 
-  this.courses.update(query, {'$push': update}, 
-    { upsert: true }, function(err, doc) {
-    if (err) {callback(err); return;}
-    callback(null, doc);
+  self.courses.findOne({'id': courseId}, {'_id': 1}, function(err, doc) {
+    if (type === 'lecture') {
+      self.lectures.update(
+        {'_parent': doc._id, 'date': date},
+        update_query,
+        callback_handler
+      );
+    } else if (type === 'assignment') {
+      self.assignments.update(
+        {'_parent': doc._id, 'deadline': date},
+        update_query,
+        callback_handler
+      );
+    } else if (type === 'exam') {
+      self.exams.update(
+        {'_parent': doc._id, 'date': date}, 
+        update_query,
+        callback_handler
+      );
+    } else {
+      callback('Invalid type.');
+      return;
+    }
   });
-
-
 };
+
+function updateFeedback(self, _id, feedbackBody, callback) {
+  feedbackBody.belongsTo = _id;
+
+  var feedback = new self.feedback(feedbackBody);
+  feedback.save(
+    function(err, doc) {
+      console.log(err);
+      if (err) {callback(err); return;}
+      callback(null, doc);
+    });
+}
