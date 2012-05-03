@@ -30,11 +30,13 @@ def fin_to_eng(keyword):
 
 
 def safe_urlopen(url, exit_on_fail=True):
+    log.debug('Opening connection to {}'.format(url))
     r = requests.get(
         url,
         headers={'Cookie': 'org.apache.tapestry.locale=en'},
         config={'max_retries': 3}
         )
+    log.debug('Connection status {}'.format(r.status_code))
     return r.text
 
 

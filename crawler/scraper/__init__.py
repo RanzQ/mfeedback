@@ -16,12 +16,12 @@ def start(config={}):
     scraper = noppa.Scraper(config=config, **vars(args))
     try:
         if args.command == 'scrape':
-            scraper.scrape(**vars(args))
+            scraper.scrape()
         elif args.command == 'update':
-            if not (args.id or args.title or args.department):
+            if not (args.id or args.title or args.departments):
                 log.info('You need to specify at least one argument for update!')
                 raise SystemExit
-            scraper.update_courses(**vars(args))
+            scraper.update_courses()
         else:
             log.info('Undefined command! Exiting...')
     except KeyboardInterrupt:
@@ -109,19 +109,21 @@ def parser():
     scrape_parser.add_argument('-o', '--organizations',
         action='store_true',
         default=False,
-        help='Scrape organizations'
+        help='Scrape organizations only'
         )
 
     scrape_parser.add_argument('-d', '--departments',
         action='store_true',
         default=False,
-        help='Scrape departments'
+        help='Scrape departments only'
         )
 
     scrape_parser.add_argument('-c', '--courses',
         action='store_true',
         default=False,
-        help='Scrape courses'
+        help=('Scrape courses only. Note that you can provide --id or '
+            '--title to narrow down the departments that you want to '
+            'scrape from.')
         )
 
     scrape_parser.add_argument('-i', '--id',
