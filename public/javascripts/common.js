@@ -9,11 +9,22 @@ $(function() {
     } 
   });
 
+  $(document).on('pageshow', function(){
+    $('.double-back').click(function() {
+      console.log('Back clicked!');
+      history.go(-2);
+    });
+  });
+
+
 });
 
 // jQuery Mobile configuration
 $(document).bind("mobileinit", function(){
+
+
   $.extend( $.mobile, {
-    defaultPageTransition: 'slide'
+    defaultPageTransition: 'slide';
+    $.mobile.page.prototype.options.addBackBtn= true;
   });
 });
