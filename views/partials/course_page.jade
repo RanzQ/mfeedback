@@ -22,8 +22,7 @@ div(data-role='page', id='course-page', data-theme='a')
           - if(course.exams.length > 0)
           li(data-role='list-divider') Exams
           - each exam in course.exams
-            li(data-role='list-divider'): a(href='/course/#{course.id}/exam/#{dateFormat(exam.date, 'yyyymmdd')}')
-              |Exam: #{dateFormat(exam.date, 'dd mmm yy')}
+            li(data-role='list-divider'): a(href='/course/#{course.id}/exam/#{dateFormat(exam.date, 'yyyymmdd')}')|Exam: #{dateFormat(exam.date, 'dd mmm yy')}
 
     ul(data-role='listview', data-inset='true'): li: a(href='/course/#{course.id}/show_feedback') Show feedback 
 
