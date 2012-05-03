@@ -242,7 +242,7 @@ server._setupRoutes = function() {
 
     app.get('/course/:id/show_feedback', function(req, res) {
       var id = req.params.id.toLowerCase();
-      db.getCourse({courseId: id, populateEvents: true}, function(error, course) {
+      db.getCourse({'courseId': id, 'populateEvents': true}, function(error, course) {
         if (error || !course) { res.send(res_404, 404); return; }  
         var context = {
           title: course.id.toUpperCase() + ' - ' + course.title,

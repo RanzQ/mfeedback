@@ -20,66 +20,125 @@ function DatabaseProvider(dbName) {
 
   UserSchema.plugin(mongooseAuth, {
 
-      everymodule: {
-        everyauth: {
-            User: function () {
+      'everymodule': {
+        'everyauth': {
+            'User': function() {
               return User;
             }
         }
-      }
+      },
 
-    , google: {
-        everyauth: {
-            myHostname: 'https://localhost:8080'
-          , appId: '74200445392.apps.googleusercontent.com'
-          , appSecret: 'dgHPFwwZM3hXDSscjgus6cAY'
-          , redirectPath: '/'
-          , scope: 'https://www.googleapis.com/auth/userinfo.profile'
+      'google': {
+        'everyauth': {
+          'myHostname': 'https://localhost:8080',
+          'appId': '74200445392.apps.googleusercontent.com',
+          'appSecret': 'dgHPFwwZM3hXDSscjgus6cAY',
+          'redirectPath': '/',
+          'scope': 'https://www.googleapis.com/auth/userinfo.profile'
         }
       }
   });
 
   var FeedbackSchema = new Schema({
-        date : { type: Date, index: true, 'default': Date.now },
-        body : String
-    })
+        'date' : {
+          'type': Date,
+          'index': true,
+          'default': Date.now
+        },
+        'body' : String
+      })
+  
     , LectureSchema = new Schema({
-        course: {type: String, index: true},
-        _parent: {type: Schema.ObjectId, ref: 'Course'},
-        topic     : String
-      , date      : { type: Date, index: true },
-        feedbacks: [FeedbackSchema]
-    })
+        'course': {
+          'type': String,
+          'index': true
+        },
+        '_parent': {
+          'type': Schema.ObjectId,
+          'ref': 'Course'
+        },
+        'topic': String,
+        'date': {
+          'type': Date,
+          'index': true
+        },
+        'feedbacks': [FeedbackSchema]
+      })
+
     , AssignmentSchema = new Schema({
-        course: {type: String, index: true},
-        number  : { type: Number, min: 1, index: true }
-      , title     : String
-      , deadline  : Date,
-        feedbacks: [FeedbackSchema]
-    })
+        'course': {
+          'type': String,
+          'index': true
+        },
+        '_parent': {
+          'type': Schema.ObjectId,
+          'ref': 'Course'
+        },
+        'number': {
+          'type': Number,
+          'min': 1,
+          'index': true
+        },
+        'title': String,
+        'deadline': Date,
+        'feedbacks': [FeedbackSchema]
+      })
+
     , ExamSchema = new Schema({
-        course: {type: String, index: true},
-        date      : { type: Date, index: true },
-        feedbacks: [FeedbackSchema]
-    })
+        'course': {
+          'type': String,
+          'index': true
+        },
+        '_parent': {
+          'type': Schema.ObjectId,
+          'ref': 'Course'
+        },
+        'date': {
+          'type': Date,
+          'index': true
+        },
+        'feedbacks': [FeedbackSchema]
+      })
+
     , CourseSchema = new Schema({
-        title       : String
-      , id          : { type: String, index: true, unique: true }
-      , department  : { type: String, index: true }
-      , isActive    : Boolean,
-        feedbacks: [FeedbackSchema],
-        lectures: [LectureSchema],
-        exams: [ExamSchema],
-        assignments: [AssignmentSchema]
-    })
+        'title': String,
+        'id': {
+          'type': String,
+          'index': true,
+          'unique': true
+        },
+        'department': {
+          'type': String,
+          'index': true
+        },
+        'isActive': Boolean,
+        'feedbacks': [FeedbackSchema],
+        'lectures': [LectureSchema],
+        'exams': [ExamSchema],
+        'assignments': [AssignmentSchema]
+      })
+
     , DepartmentSchema = new Schema({
-        title        : String
-      , id           : { type: String, index: true, unique: true }
-      , organization : String
-    })
+        'title': String,
+        'id': {
+          'type':String,
+          'index': true,
+          'unique': true
+        },
+        'organization': String
+      })
+
     , OrganizationSchema = new Schema({
-        title       : { type: String, index: true, unique: true }
-      , id          : { type: String, index: true, unique: true }  
+        'title': {
+          'type': String,
+          'index': true,
+          'unique': true
+        },
+        'id': {
+          'type': String,
+          'index': true,
+          'unique': true
+        }
     });
 
   this.organizations = mongoose.model('Organization', OrganizationSchema);
@@ -131,13 +190,6 @@ app.getCoursesByDepartment = function(depId,  activeOnly, callback) {
   });
 };
 
-// app.getCourse = function(id, callback) {
-//   this.courses.findOne({'id': id}, function(err, doc) {
-//     if (err) {callback(err); return;}
-//     callback(null, doc);  
-//   });
-// };
-
 app.getCourse = function(options, callback) {
   var self = this
     , cb = callback
@@ -164,7 +216,6 @@ function populateEvents(self, course, callback) {
       course.exams = doc;
       self.lectures.find({'_parent': course._id}, function(err, doc) {
         course.lectures = doc;
-        console.log(course);
         callback(null, course);
       });
     });
@@ -212,13 +263,6 @@ app.getAssignment = function(options, callback) {
       });
   });
 };
-
-// app.getLecture = function(id, date, callback) {
-//   this.lectures.findOne({'course': id, 'date': date}, function(err, doc) {
-//     if (err) {callback(err); return;}
-//     callback(null, doc);
-//   });
-// };
 
 app.searchCourses = function(term, callback) {
   var regexp = null
