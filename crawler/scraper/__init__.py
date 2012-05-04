@@ -18,9 +18,6 @@ def start(config={}):
         if args.command == 'scrape':
             scraper.scrape()
         elif args.command == 'update':
-            if not (args.id or args.title or args.departments):
-                log.info('You need to specify at least one argument for update!')
-                raise SystemExit
             scraper.update_courses()
         else:
             log.info('Undefined command! Exiting...')

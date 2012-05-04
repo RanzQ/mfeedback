@@ -4,30 +4,50 @@ div(data-role='page', id='course-page', data-theme='a')
   include header
 
   div(data-role='content')
+    - var base_url = '/course/' + course.id
+    - var dl_url = ''
+    - var full_url = ''
+    ul(data-role='listview', data-inset='true')
+      li
+        a(href='#{base_url}/feedback') Course feedback
+
+      if(course.lectures.length > 0)
+        li(data-role='list-divider') Lectures
+
+        each lecture in course.lectures
+          - dl_url = dateFormat(lecture.date, 'yyyymmdd')
+          - full_url = [base_url, 'lecture', dl_url].join('/')
+          li
+            a(href='#{full_url}')
+              = dateFormat(lecture.date, 'dd mmm yy')
+              |  #{lecture.topic}
+              span(class='ui-li-count')
+                = lecture.feedbacks.length
+
+      if(course.assignments.length > 0)
+        li(data-role='list-divider') Assignments
+
+        each assignment in course.assignments
+          - dl_url = dateFormat(assignment.deadline, 'yyyymmddHHMM')
+          - full_url = [base_url, 'assignment', dl_url].join('/')
+          li(data-role='li-divider')
+            a(href='#{full_url}')
+              | #{assignment.title} (DL: 
+              = dateFormat(assignment.deadline, 'dd mmm yy')
+              | )
+
+      if(course.exams.length > 0)
+        li(data-role='list-divider') Exams
+
+        each exam in course.exams
+          - dl_url = dateFormat(exam.date, 'yyyymmdd')
+          - full_url = [base_url, 'exam', dl_url].join('/')
+          li(data-role='list-divider')
+            a(href='#{full_url}')
+              | Exam: #{dateFormat(exam.date, 'dd mmm yy')}
 
     ul(data-role='listview', data-inset='true')
-          li
-            a(href='/course/#{course.id}/feedback') Course feedback
-          - if(course.lectures.length > 0)
-          li(data-role='list-divider') Lectures
-          - each lecture in course.lectures
-            li
-             a(href='/course/#{course.id}/lecture/#{dateFormat(lecture.date, 'yyyymmdd')}')|#{dateFormat(lecture.date, 'dd mmm yy')}: #{lecture.topic}
-             span(class='ui-li-count') #{lecture.feedbacks.length}
-          - if(course.assignments.length > 0)
-          li(data-role='list-divider') Assignments
-          - each assignment in course.assignments
-            li(data-role='li-divider')
-             a(href='/course/#{course.id}/assignment/#{dateFormat(assignment.deadline, 'yyyymmddHHMM')}')|#{assignment.title} (DL: #{dateFormat(assignment.deadline, 'dd mmm yy')})
-          - if(course.exams.length > 0)
-          li(data-role='list-divider') Exams
-          - each exam in course.exams
-            li(data-role='list-divider'): a(href='/course/#{course.id}/exam/#{dateFormat(exam.date, 'yyyymmdd')}')|Exam: #{dateFormat(exam.date, 'dd mmm yy')}
-
-    ul(data-role='listview', data-inset='true'): li: a(href='/course/#{course.id}/show_feedback') Show feedback 
-
-
- // /content
+        li
+            a(href='#{base_url}/show_feedback') Show feedback
 
 // End of course page
-

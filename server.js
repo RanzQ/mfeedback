@@ -232,7 +232,10 @@ server._setupRoutes = function() {
       db.addFeedback(id, 'course', null, feedback, function(error, result) {
         if (error || !req.xhr) { res.send(res_404, 404); return; }
         console.log(result);
-        res.partial('partials/thank_you_page', {title: 'Thank you!'});
+        res.partial('partials/thank_you_page', {
+          title: 'Thank you!',
+          back_url: '/course/' + courseId
+        });
       });
     });
 
@@ -304,7 +307,10 @@ server._setupRoutes = function() {
       db.addFeedback(courseId, 'lecture', date, feedback, function(error, result) {
         console.log(result);
         if (error || !req.xhr) { res.send(res_404, 404); return; }
-        res.partial('partials/thank_you_page', {title: 'Thank you!'});
+        res.partial('partials/thank_you_page', {
+          title: 'Thank you!', 
+          back_url: '/course/' + courseId
+        });
       });
     });
 
@@ -361,7 +367,10 @@ server._setupRoutes = function() {
       db.addFeedback(courseId, 'assignment', date, feedback, function(error, result) {
         if (error || !req.xhr) { res.send(res_404, 404); return; } 
         console.log(result);
-        res.partial('partials/thank_you_page', {title: 'Thank you!'});
+        res.partial('partials/thank_you_page', {
+          title: 'Thank you!',
+          back_url: '/course/' + courseId
+        });
       });
     });
 
@@ -416,7 +425,10 @@ server._setupRoutes = function() {
           res.send(res_404, 404);
         } else  {
           console.log(result);
-          res.partial('partials/thank_you_page', {title: 'Thank you!'});
+          res.partial('partials/thank_you_page', {
+            title: 'Thank you!',
+            back_url: '/course/' + courseId
+          });
         } 
       });
     });

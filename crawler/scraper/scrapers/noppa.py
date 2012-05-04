@@ -46,7 +46,7 @@ class Scraper(object):
         ]
 
         # Pop the command since we don't need it
-        self._kwargs.pop('command')
+        self._command = self._kwargs.pop('command')
 
         if self._kwargs.pop('ensure_indexes') == True:
             ensure_indexes(self._db, collections, kwargs['verbose'])
@@ -100,10 +100,11 @@ class Scraper(object):
             self._db.organizations.update({'id': organization_id},
                 organization, safe=True, upsert=True)
 
-    def _scrape_departments(self, **kwargs):
+    def _scrape_departments(self, organizations=[], **kwargs):
         ''' Scrape the list of departments '''
 
-        organizations = self._db.organizations.find()
+        if len(organizations) == 0:
+            organizations = self._db.organizations.find()
 
         for organization in organizations:
 

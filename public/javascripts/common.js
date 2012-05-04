@@ -20,11 +20,13 @@ $(function() {
 });
 
 // jQuery Mobile configuration
-$(document).bind("mobileinit", function(){
+$(document).bind("mobileinit", function() {
 
 
-  $.extend( $.mobile, {
-    defaultPageTransition: 'slide';
-    $.mobile.page.prototype.options.addBackBtn= true;
+  $.extend($.mobile, {
+    defaultPageTransition: 'slide'
   });
+
+  $.mobile.page.prototype.options.addBackBtn = true;
+
 });
