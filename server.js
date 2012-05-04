@@ -284,13 +284,14 @@ server._setupRoutes = function() {
         if (req.xhr) {
           res.partial('partials/lecture_feedback_page', context);
         } else {
+          console.log(context);
           res.render('lecture_feedback', context);
         }
       });
     });
 
     /*
-     * POST lecture feedback.
+     * POST lecture feedback or vote.
      */
 
     app.post('/course/:id/lecture/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
@@ -299,21 +300,35 @@ server._setupRoutes = function() {
         , m = req.params.month
         , d = req.params.day
         , date = new Date()
-        , feedback = req.body.message;
+        , feedback = req.body.message
+        , votetype = req.body.votetype;
 
       date.setFullYear(y,m-1,d);
       date.setHours(0, 0, 0, 0);
 
-      db.addFeedback(courseId, 'lecture', date, feedback, function(error, result) {
-        console.log(result);
-        if (error || !req.xhr) { res.send(res_404, 404); return; }
-        res.partial('partials/thank_you_page', {
-          title: 'Thank you!', 
-          back_url: '/course/' + courseId
+      if (feedback) {
+        db.addFeedback(courseId, 'lecture', date, feedback, function(error, result) {
+          console.log(result);
+          if (error || !req.xhr) { res.send(res_404, 404); return; }
+          res.partial('partials/thank_you_page', {
+            title: 'Thank you!', 
+            back_url: '/course/' + courseId
+          });
         });
-      });
-    });
+      } else if (votetype) {
+        db.addVote(courseId, 'lecture', date, votetype, function(error, result) {
+          console.log(result);
+          if (error || !req.xhr) { console.log(error); res.send(res_404, 404); return; }
+          res.partial('partials/thank_you_page', {
+            title: 'Thank you!', 
+            back_url: '/course/' + courseId
+          });
+        });
+      } else {
+        res.send(res_404, 404); return;
+      }
 
+    });
 
     /*
      * GET assignment feedback page.

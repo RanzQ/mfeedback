@@ -4,8 +4,17 @@ div(data-role='page', id='feedback-page', data-theme='a')
   include header
 
   div(data-role='content')
+    
+    form(id='vote-form', action='', method='post', data-inline='true')
+      input(type='hidden', name='votetype')
+      a(type='button', class='vote-button vote-button-up', data-inline='true', data-theme='c')
+        |#{(lecture.votes.up) ? '+' + lecture.votes.up : ''}
+        img(src='/public/images/thumbup_32.png')
+      a(type='button', class='vote-button vote-button-down', data-inline='true', data-theme='d')
+        |#{(lecture.votes.down) ? '-' + lecture.votes.down : ''}
+        img(src='/public/images/thumbdn_32.png')
 
-    form(action='', method='post')
+    form(id='feedback-form', action='', method='post')
       ul(data-role='listview', data-inset='true')
         li(data-role='list-divider')
           |Feedback for lecture: #{ lecture.topic }

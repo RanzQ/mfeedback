@@ -7,7 +7,7 @@ div(data-role='page', id='course-page', data-theme='a')
     - var base_url = '/course/' + course.id
     - var dl_url = ''
     - var full_url = ''
-    ul(data-role='listview', data-inset='true')
+    ul(data-role='listview', data-inset='true', data-count-theme='a')
       li
         a(href='#{base_url}/feedback') Course feedback
 
@@ -21,8 +21,7 @@ div(data-role='page', id='course-page', data-theme='a')
             a(href='#{full_url}')
               = dateFormat(lecture.date, 'dd mmm yy')
               |  #{lecture.topic}
-              span(class='ui-li-count')
-                = lecture.feedbacks.length
+            span(class='ui-li-count')= lecture.feedbacks.length
 
       if(course.assignments.length > 0)
         li(data-role='list-divider') Assignments

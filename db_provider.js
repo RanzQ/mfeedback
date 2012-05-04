@@ -60,7 +60,11 @@ function DatabaseProvider(dbName) {
           'type': Date,
           'index': true
         },
-        'feedbacks': [FeedbackSchema]
+        'feedbacks': [FeedbackSchema],
+        'votes': {
+          'up' : Number,
+          'down' : Number
+        }
       })
 
     , AssignmentSchema = new Schema({
@@ -79,7 +83,11 @@ function DatabaseProvider(dbName) {
         },
         'title': String,
         'deadline': Date,
-        'feedbacks': [FeedbackSchema]
+        'feedbacks': [FeedbackSchema],
+        'votes': {
+          'up' : Number,
+          'down' : Number
+        }
       })
 
     , ExamSchema = new Schema({
@@ -95,7 +103,11 @@ function DatabaseProvider(dbName) {
           'type': Date,
           'index': true
         },
-        'feedbacks': [FeedbackSchema]
+        'feedbacks': [FeedbackSchema],
+        'votes': {
+          'up' : Number,
+          'down' : Number
+        }
       })
 
     , CourseSchema = new Schema({
@@ -206,16 +218,22 @@ app.getCourse = function(options, callback) {
 };
 
 function populateEvents(self, course, callback) {
-  self.assignments.find({'_parent': course._id}, function(err, doc) {
-    course.assignments = doc;
-    self.exams.find({'_parent': course._id}, function(err, doc) {
-      course.exams = doc;
-      self.lectures.find({'_parent': course._id}, function(err, doc) {
-        course.lectures = doc;
-        callback(null, course);
+  self.assignments.find(
+      {'_parent': course._id}, [],
+      {'sort': {'deadline': 1}}, function(err, doc) {
+        course.assignments = doc;
+        self.exams.find(
+            {'_parent': course._id}, [],
+            {'sort': {'date': 1}}, function(err, doc) {
+              course.exams = doc;
+              self.lectures.find(
+                  {'_parent': course._id}, [],
+                  {'sort': {'date': 1}}, function(err, doc) {
+                    course.lectures = doc;
+                    callback(null, course);
+                  });
+            });
       });
-    });
-  });
 }
 
 app.getLecture = function(options, callback) {
@@ -376,11 +394,54 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
       };
 
   if (type === 'course') {
-    self.courses.findOne({'id': courseId}, {'_id': 1}, function() { 
-      console.log('Implement me!');
-      return;
-    });
+    self.courses.update(
+      {'id': courseId}, 
+      update_query,
+      callback_handler
+    );
   }
+
+  self.courses.findOne({'id': courseId}, {'_id': 1}, function(err, doc) {
+    if (type === 'lecture') {
+      self.lectures.update(
+        {'_parent': doc._id, 'date': date},
+        update_query,
+        callback_handler
+      );
+    } else if (type === 'assignment') {
+      self.assignments.update(
+        {'_parent': doc._id, 'dead': date},
+        update_query,
+        callback_handler
+      );
+    } else if (type === 'exam') {
+      self.exams.update(
+        {'_parent': doc._id, 'date': date}, 
+        update_query,
+        callback_handler
+      );
+    } else {
+      callback('Invalid type.');
+      return;
+    }
+  });
+};
+
+app.addVote = function(courseId, type, date, votetype, callback) {
+
+  var self = this
+    , update_query = {}
+    , callback_handler = function(err, doc) {
+        callback(err, doc);
+      };
+
+  if(votetype === 'down') {
+    update_query = {'$inc':{'votes.down':1}};
+  } else {
+    update_query = {'$inc':{'votes.up':1}};
+  }
+
+  console.log(update_query);
 
   self.courses.findOne({'id': courseId}, {'_id': 1}, function(err, doc) {
     if (type === 'lecture') {
@@ -406,16 +467,5 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
       return;
     }
   });
+
 };
-
-function updateFeedback(self, _id, feedbackBody, callback) {
-  feedbackBody.belongsTo = _id;
-
-  var feedback = new self.feedback(feedbackBody);
-  feedback.save(
-    function(err, doc) {
-      console.log(err);
-      if (err) {callback(err); return;}
-      callback(null, doc);
-    });
-}
