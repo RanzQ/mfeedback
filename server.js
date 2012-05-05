@@ -93,7 +93,7 @@ server._setupRoutes = function() {
       , db = this.db;
 
 
-    function checkSession(req, res, eventType, date) {
+    function checkSession(req, res, voteId) {
       var session = req.session;
       if (!session) {
         res.contentType('json');
@@ -106,12 +106,10 @@ server._setupRoutes = function() {
           session.votesCast = { };
       }
 
-      var votesCast = session.votesCast
-        , voteId = eventType.substring(0,1) + date;
+      var votesCast = session.votesCast;
 
       // If the vote ID was in the already cast votes object, 
       // refuse to register the vote and return
-      // Else mark this vote ID as voted on and save it
       if (votesCast[voteId]) {
           res.contentType('json');
           res.send({
@@ -127,13 +125,12 @@ server._setupRoutes = function() {
         , feedback = req.body.message
         , votetype = req.body.votetype
         , fb = {'body': feedback, 'votetype': votetype}
-        , isVote = (feedback === undefined);
+        , isVote = (feedback === undefined)
+        , voteId = courseId + eventType.substring(0,1) + date;
       // If this is a vote, check that the session is valid
-      if (isVote) {
-        var validSession = checkSession(req, res, eventType, date);
-        if (!validSession) {
+      // If the session is not valid, return
+      if (isVote && !checkSession(req, res, voteId)) {
           return;
-        }
       }
 
       db.addFeedback(courseId, eventType, date, fb, function(error, result) {
@@ -144,8 +141,7 @@ server._setupRoutes = function() {
           if (isVote) {
             // Save the voteId to session so user can't vote again during
             // this session
-            var voteId = eventType.substring(0,1) + date
-              , session = req.session;
+            var session = req.session;
             session.votesCast[voteId] = true;
             session.save();
             res.contentType('json');
