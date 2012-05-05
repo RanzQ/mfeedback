@@ -1,16 +1,38 @@
 // Start of course feedback page
-div(data-role='page', id='feedback-page', data-theme='a')
+div(data-role='page', id='test-page', data-theme='a', data-add-back-btn="true")
 
   include header
 
   div(data-role='content')
 
     form(action='', method='post')
-      ul(data-role='listview', data-inset='true')
-        li(data-role='list-divider') Feedback for course #{course.id.toUpperCase()} - #{course.title}:
-        li: textarea(cols='40', rows='10', name='message', id='message', value='')
-        li: input(type='submit', name='submit-feedback', value='Submit')
+      div(data-role='fieldcontain)
+         fieldset(data-role='controlgroup')
+             label(for='slider-0') Lectures
+             input(type='range', name='slider-0', id='slider-0', value='2', min='1', max='4', data-highlight='true', style='display:none', data-theme='a', data-track-theme='b')
+      div(data-role='fieldcontain)
+         fieldset(data-role='controlgroup')
+             label(for='slider-1') Book
+             input(type='range', name='slider-1', id='slider-1', value='2', min='1', max='4')
+      div(data-role='fieldcontain)
+         fieldset(data-role='controlgroup')
+             label(for='slider-2') Excercises
+             input(type='range', name='slider-2', id='slider-2', value='2', min='1', max='4')
+      div(data-role='fieldcontain)
+         fieldset(data-role='controlgroup')
+             label(for='slider-3') Exam
+             input(type='range', name='slider-3', id='slider-3', value='2', min='1', max='4')
+      div(data-role='fieldcontain)
+         fieldset(data-role='controlgroup')
+             label(for='slider-4') Overall
+             input(type='range', name='slider-4', id='slider-4', value='2', min='1', max='4')
+      div(data-role='fieldcontain)
+         fieldset(data-role='controlgroup')
+             label(for='message') Comments
+             textarea(cols='10', rows='15', name='message', id='message', value='')
+      input(type='submit', name='submit-feedback', value='Submit')
 
   // /content
 
 // End of course feedback page
+
