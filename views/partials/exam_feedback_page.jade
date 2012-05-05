@@ -5,14 +5,27 @@ div(data-role='page', id='feedback-page', data-theme='a')
 
   div(data-role='content')
 
-    form(id='vote-form', action='', method='post', data-inline='true')
-      input(type='hidden', name='votetype')
-      a(type='button', class='vote-button vote-button-up', data-inline='true', data-theme='c')
-        |#{(exam.votes.up) ? '+' + exam.votes.up : ''}
-        img(src='/public/images/thumbup_32.png')
-      a(type='button', class='vote-button vote-button-down', data-inline='true', data-theme='d')
-        |#{(exam.votes.down) ? '-' + exam.votes.down : ''}
-        img(src='/public/images/thumbdn_32.png')
+    div(class='messages')
+
+    a(href=''
+    type='button'
+    data-votetype='up'
+    class='vote-button vote-button-up'
+    data-inline='true'
+    data-theme='c')
+      span(class='upvotes')
+        = exam.votes.up ? '+' + exam.votes.up : ''
+      img(src='/public/images/thumbup_32.png')
+
+    a(href=''
+    type='button'
+    data-votetype='down'
+    class='vote-button vote-button-down'
+    data-inline='true'
+    data-theme='d')
+      span(class='downvotes')
+        = exam.votes.down ? '-' + exam.votes.down : ''
+      img(src='/public/images/thumbdn_32.png')
 
     form(action='', method='post')
       ul(data-role='listview', data-inset='true')

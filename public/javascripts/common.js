@@ -19,10 +19,31 @@ $(function() {
     });
 
 
-    $('.double-back').click(function() {
-      console.log('Back clicked!');
-      history.go(-2);
-    });
+
+    $(".vote-button").click(function(e) {
+        e.preventDefault();
+        var $this = $(this)
+          , votetype = $this.data('votetype');
+
+        if(votetype !== undefined) {
+          $.ajax({
+            type: "POST",
+            url: window.location,
+            data: ({'votetype': votetype}),
+            cache: false,
+            success: function(data) {
+              $('.messages').text(data.msg);
+              if (data.votes) {
+                var upvotes = data.votes.up ? '+' + data.votes.up : ''
+                  , downvotes = data.votes.down ? '-' + data.votes.down : '';
+                $('.upvotes').text(upvotes);
+                $('.downvotes').text(downvotes);
+              }
+            }
+          });
+        }
+        return false;
+      });
 
     $('#vote-form a').click(function() {
       if($(this).hasClass('vote-button-up')) {

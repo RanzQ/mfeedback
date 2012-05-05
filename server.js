@@ -86,12 +86,78 @@ server._configure = function() {
       }
     });
   });
-
 };
 
 server._setupRoutes = function() {
     var app = this.express_server
       , db = this.db;
+
+
+    function checkSession(req, res, eventType, date) {
+      var session = req.session;
+      if (!session) {
+        res.contentType('json');
+        res.send({'msg': 'Something went terribly wrong. Try refreshing the page.'});
+        return false; 
+      }
+      // Check if there's already an object for cast votes and create it if needed
+      if (!session.votesCast) {
+          console.log('Creating a new session');
+          session.votesCast = { };
+      }
+
+      var votesCast = session.votesCast
+        , voteId = eventType.substring(0,1) + date;
+
+      // If the vote ID was in the already cast votes object, 
+      // refuse to register the vote and return
+      // Else mark this vote ID as voted on and save it
+      if (votesCast[voteId]) {
+          res.contentType('json');
+          res.send({
+            'msg': 'You have already voted'
+          });
+          return false;
+      }
+      return true;
+    }
+
+    function addFeedback(req, res, eventType, date) {
+      var courseId = req.params.id.toLowerCase()
+        , feedback = req.body.message
+        , votetype = req.body.votetype
+        , fb = {'body': feedback, 'votetype': votetype}
+        , isVote = (feedback === undefined);
+      // If this is a vote, check that the session is valid
+      if (isVote) {
+        var validSession = checkSession(req, res, eventType, date);
+        if (!validSession) {
+          return;
+        }
+      }
+
+      db.addFeedback(courseId, eventType, date, fb, function(error, result) {
+        console.log(result);
+        if (error || !req.xhr) { res.send(res_404, 404); return; }
+          // If feedback is undefined, this is either an upvote or downvote
+          // so we should respond with json
+          if (isVote) {
+            // Save the voteId to session so user can't vote again during
+            // this session
+            var voteId = eventType.substring(0,1) + date
+              , session = req.session;
+            session.votesCast[voteId] = true;
+            session.save();
+            res.contentType('json');
+            res.send({'msg': 'Thank you for your vote!', 'votes': result.votes});
+          } else {
+            res.partial('partials/thank_you_page', {
+              title: 'Thank you!',
+              back_url: '/course/' + courseId
+            });
+          }
+      });
+    }
 
     /*
      * GET index page.
@@ -227,17 +293,7 @@ server._setupRoutes = function() {
      */
 
     app.post('/course/:id/feedback', function(req, res) {
-      var id = req.params.id.toLowerCase()
-        , feedback = req.body.message
-        , fb = {'body': feedback};
-      db.addFeedback(id, 'course', null, fb, function(error, result) {
-        if (error || !req.xhr) { res.send(res_404, 404); return; }
-        console.log(result);
-        res.partial('partials/thank_you_page', {
-          title: 'Thank you!',
-          back_url: '/course/' + courseId
-        });
-      });
+      addFeedback(req, res, 'courses', date);
     });
 
     /*
@@ -296,28 +352,18 @@ server._setupRoutes = function() {
      */
 
     app.post('/course/:id/lecture/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
-      var courseId = req.params.id.toLowerCase()
-        , y = req.params.year 
+      var y = req.params.year 
         , m = req.params.month
         , d = req.params.day
-        , date = new Date()
-        , feedback = req.body.message
-        , votetype = req.body.votetype;
+        , date = new Date();
 
       date.setFullYear(y,m-1,d);
       date.setHours(0, 0, 0, 0);
 
-      var fb = {'body': feedback, 'votetype': votetype};
-
-      db.addFeedback(courseId, 'lectures', date, fb, function(error, result) {
-        console.log(result);
-        if (error || !req.xhr) { res.send(res_404, 404); return; }
-        res.partial('partials/thank_you_page', {
-          title: 'Thank you!', 
-          back_url: '/course/' + courseId
-        });
-      });
+      addFeedback(req, res, 'lectures', date);
     });
+
+
 
     /*
      * GET assignment feedback page.
@@ -356,29 +402,17 @@ server._setupRoutes = function() {
      */
 
     app.post('/course/:id/assignment/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2}):hour([0-9]{2}):minute([0-9]{2})', function(req, res) {
-      var courseId = req.params.id.toLowerCase()
-        , y = req.params.year 
+      var y = req.params.year 
         , m = req.params.month
         , d = req.params.day
         , h = req.params.hour
         , min = req.params.minute
-        , date = new Date()
-        , feedback = req.body.message
-        , votetype = req.body.votetype;
+        , date = new Date();
 
       date.setFullYear(y,m-1,d);
       date.setHours(h, min, 0, 0);
 
-      var fb = {'body': feedback, 'votetype': votetype};
-
-      db.addFeedback(courseId, 'assignments', date, fb, function(error, result) {
-        if (error || !req.xhr) { res.send(res_404, 404); return; } 
-        console.log(result);
-        res.partial('partials/thank_you_page', {
-          title: 'Thank you!',
-          back_url: '/course/' + courseId
-        });
-      });
+      addFeedback(req, res, 'assignments', date);
     });
 
     /*
@@ -416,10 +450,7 @@ server._setupRoutes = function() {
      */
 
     app.post('/course/:id/exam/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
-      var courseId = req.params.id.toLowerCase()
-        , feedback = req.body.message
-        , votetype = req.body.votetype
-        , y = req.params.year 
+      var y = req.params.year 
         , m = req.params.month
         , d = req.params.day
         , date = new Date();
@@ -427,20 +458,7 @@ server._setupRoutes = function() {
       date.setFullYear(y,m-1,d);
       date.setHours(0, 0, 0, 0);
 
-      var fb = {'body': feedback, 'votetype': votetype};
-
-      db.addFeedback(courseId, 'exams', date, fb, function(error, result) {
-        if (error || !req.xhr) {
-          console.log(error);
-          res.send(res_404, 404);
-        } else  {
-          console.log(result);
-          res.partial('partials/thank_you_page', {
-            title: 'Thank you!',
-            back_url: '/course/' + courseId
-          });
-        } 
-      });
+      addFeedback(req, res, 'exams', date);
     });
 
 

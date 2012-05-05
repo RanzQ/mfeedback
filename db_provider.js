@@ -151,6 +151,15 @@ function DatabaseProvider(dbName) {
         }
     });
 
+  var fam = function (query, sort, doc, options, callback) {
+    return this.collection.findAndModify(query, sort, doc, options, callback);
+  };
+
+  LectureSchema.statics.findAndModify = fam;
+  ExamSchema.statics.findAndModify = fam;
+  AssignmentSchema.statics.findAndModify = fam;
+  CourseSchema.statics.findAndModify = fam;
+
   this.organizations = mongoose.model('Organization', OrganizationSchema);
   this.departments = mongoose.model('Department', DepartmentSchema);
   this.courses = mongoose.model('Course', CourseSchema);
@@ -414,9 +423,10 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
   console.log(update_query);
 
   self.courses.findOne({'id': courseId}, {'_id': 1}, function(err, doc) {
-    self[type].update(
-      {'_parent': doc._id, 'date': date},
-      update_query,
+    console.log('AT LEAST WE ARE GETTING THIS FAR');
+    self[type].findAndModify(
+      {'_parent': doc._id, 'date': date}, [],
+      update_query, {'new': true},
       function(err, doc) {
         if (err || !doc) {callback(err); return;}
         callback(err, doc);
