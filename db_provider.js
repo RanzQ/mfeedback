@@ -385,87 +385,42 @@ app.addExam = function(courseId, exam, callback) {
  *      @param {String} feedback - feedback text
  */
 app.addFeedback = function(courseId, type, date, feedback, callback) {
-  var timestamp = new Date()
-    , self = this
-    , feedbackBody = {'body': feedback, 'date': timestamp}
-    , update_query = {'$push': {'feedbacks': feedbackBody}}
-    , callback_handler = function(err, doc) {
-        callback(err, doc);
-      };
+  var self = this
+    , update_query = {};
+
+  if (feedback.body === undefined) {
+    var vote = {};
+    vote['votes.' + feedback.votetype] = 1;
+    update_query = {'$inc': vote};
+  } else {
+    var timestamp = new Date()
+      , feedbackBody = {'body': feedback.body, 'date': timestamp};
+    update_query = {'$push': {'feedbacks': feedbackBody}};
+
+  }
 
   if (type === 'course') {
     self.courses.update(
       {'id': courseId}, 
       update_query,
-      callback_handler
-    );
-  }
-
-  self.courses.findOne({'id': courseId}, {'_id': 1}, function(err, doc) {
-    if (type === 'lecture') {
-      self.lectures.update(
-        {'_parent': doc._id, 'date': date},
-        update_query,
-        callback_handler
-      );
-    } else if (type === 'assignment') {
-      self.assignments.update(
-        {'_parent': doc._id, 'dead': date},
-        update_query,
-        callback_handler
-      );
-    } else if (type === 'exam') {
-      self.exams.update(
-        {'_parent': doc._id, 'date': date}, 
-        update_query,
-        callback_handler
-      );
-    } else {
-      callback('Invalid type.');
-      return;
-    }
-  });
-};
-
-app.addVote = function(courseId, type, date, votetype, callback) {
-
-  var self = this
-    , update_query = {}
-    , callback_handler = function(err, doc) {
+      function(err, doc) {
+        if (err || !doc) {callback(err); return;}
         callback(err, doc);
-      };
-
-  if(votetype === 'down') {
-    update_query = {'$inc':{'votes.down':1}};
-  } else {
-    update_query = {'$inc':{'votes.up':1}};
+      }
+    );
+    return;
   }
 
   console.log(update_query);
 
   self.courses.findOne({'id': courseId}, {'_id': 1}, function(err, doc) {
-    if (type === 'lecture') {
-      self.lectures.update(
-        {'_parent': doc._id, 'date': date},
-        update_query,
-        callback_handler
-      );
-    } else if (type === 'assignment') {
-      self.assignments.update(
-        {'_parent': doc._id, 'deadline': date},
-        update_query,
-        callback_handler
-      );
-    } else if (type === 'exam') {
-      self.exams.update(
-        {'_parent': doc._id, 'date': date}, 
-        update_query,
-        callback_handler
-      );
-    } else {
-      callback('Invalid type.');
-      return;
-    }
+    self[type].update(
+      {'_parent': doc._id, 'date': date},
+      update_query,
+      function(err, doc) {
+        if (err || !doc) {callback(err); return;}
+        callback(err, doc);
+      }
+    );
   });
-
 };

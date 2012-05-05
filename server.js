@@ -228,8 +228,9 @@ server._setupRoutes = function() {
 
     app.post('/course/:id/feedback', function(req, res) {
       var id = req.params.id.toLowerCase()
-        , feedback = req.body.message;
-      db.addFeedback(id, 'course', null, feedback, function(error, result) {
+        , feedback = req.body.message
+        , fb = {'body': feedback};
+      db.addFeedback(id, 'course', null, fb, function(error, result) {
         if (error || !req.xhr) { res.send(res_404, 404); return; }
         console.log(result);
         res.partial('partials/thank_you_page', {
@@ -306,28 +307,16 @@ server._setupRoutes = function() {
       date.setFullYear(y,m-1,d);
       date.setHours(0, 0, 0, 0);
 
-      if (feedback) {
-        db.addFeedback(courseId, 'lecture', date, feedback, function(error, result) {
-          console.log(result);
-          if (error || !req.xhr) { res.send(res_404, 404); return; }
-          res.partial('partials/thank_you_page', {
-            title: 'Thank you!', 
-            back_url: '/course/' + courseId
-          });
-        });
-      } else if (votetype) {
-        db.addVote(courseId, 'lecture', date, votetype, function(error, result) {
-          console.log(result);
-          if (error || !req.xhr) { console.log(error); res.send(res_404, 404); return; }
-          res.partial('partials/thank_you_page', {
-            title: 'Thank you!', 
-            back_url: '/course/' + courseId
-          });
-        });
-      } else {
-        res.send(res_404, 404); return;
-      }
+      var fb = {'body': feedback, 'votetype': votetype};
 
+      db.addFeedback(courseId, 'lectures', date, fb, function(error, result) {
+        console.log(result);
+        if (error || !req.xhr) { res.send(res_404, 404); return; }
+        res.partial('partials/thank_you_page', {
+          title: 'Thank you!', 
+          back_url: '/course/' + courseId
+        });
+      });
     });
 
     /*
@@ -374,12 +363,15 @@ server._setupRoutes = function() {
         , h = req.params.hour
         , min = req.params.minute
         , date = new Date()
-        , feedback = req.body.message;
+        , feedback = req.body.message
+        , votetype = req.body.votetype;
 
       date.setFullYear(y,m-1,d);
       date.setHours(h, min, 0, 0);
 
-      db.addFeedback(courseId, 'assignment', date, feedback, function(error, result) {
+      var fb = {'body': feedback, 'votetype': votetype};
+
+      db.addFeedback(courseId, 'assignments', date, fb, function(error, result) {
         if (error || !req.xhr) { res.send(res_404, 404); return; } 
         console.log(result);
         res.partial('partials/thank_you_page', {
@@ -426,6 +418,7 @@ server._setupRoutes = function() {
     app.post('/course/:id/exam/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
       var courseId = req.params.id.toLowerCase()
         , feedback = req.body.message
+        , votetype = req.body.votetype
         , y = req.params.year 
         , m = req.params.month
         , d = req.params.day
@@ -434,7 +427,9 @@ server._setupRoutes = function() {
       date.setFullYear(y,m-1,d);
       date.setHours(0, 0, 0, 0);
 
-      db.addFeedback(courseId, 'exam', date, feedback, function(error, result) {
+      var fb = {'body': feedback, 'votetype': votetype};
+
+      db.addFeedback(courseId, 'exams', date, fb, function(error, result) {
         if (error || !req.xhr) {
           console.log(error);
           res.send(res_404, 404);
