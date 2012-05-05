@@ -3,7 +3,6 @@
 
 import re
 import logging
-from time import sleep
 from bs4 import BeautifulSoup
 from pymongo import Connection
 from pymongo.objectid import ObjectId
@@ -22,21 +21,20 @@ class Scraper(object):
 
     def __init__(self, config={}, **kwargs):
 
-        noppa_data = {}
         if len(config) == 0:
-            log.info('No config provided. Falling back to defaults')
+            log.warn('No config provided. Falling back to defaults')
 
-        self._noppa_url = noppa_data.get('noppa_url', 'http://noppa.aalto.fi')
-        self._courses_url = noppa_data.get('courses_url', '/noppa/kurssit/')
-        self._course_url = noppa_data.get('course_url', '/noppa/kurssi/')
+        self._noppa_url = config.get('noppa_url', 'https://noppa.aalto.fi')
+        self._courses_url = config.get('courses_url', '/noppa/kurssit/')
+        self._course_url = config.get('course_url', '/noppa/kurssi/')
 
         self._kwargs = kwargs
 
         # The mongodb connection to default port at localhost
         connection = Connection()
 
-        # Select the collection from db
-        self._db = connection['mfeedback']
+        # Select the collection from db. Falls back to mfeedback.
+        self._db = connection[config.get('db_name', 'mfeedback')]
 
         collections = [
             {'name': 'feedback', 'fields': ['courseId', 'targetId']},
@@ -78,6 +76,8 @@ class Scraper(object):
     def _scrape_organizations(self, **kwargs):
         ''' Update the list of organizations '''
 
+        log.info('Updating organizations')
+
         # Open the base url to fetch the different course lists
         res = safe_urlopen(self.courselist_url)
 
@@ -102,6 +102,8 @@ class Scraper(object):
 
     def _scrape_departments(self, organizations=[], **kwargs):
         ''' Scrape the list of departments '''
+
+        log.info('Updating departments')
 
         if len(organizations) == 0:
             organizations = self._db.organizations.find()
@@ -133,10 +135,6 @@ class Scraper(object):
                 self._db.departments.update({'id': department_id}, department,
                     safe=True, upsert=True)
 
-            # Sleep for a second or two so we don't have to
-            # explain why we're DOSing Noppa with request spam
-            sleep(1)
-
     def _extract_courses(self, res, department_id, organization_id):
         ''' Extract courses from the response '''
         soup = BeautifulSoup(res)
@@ -164,6 +162,8 @@ class Scraper(object):
     def _scrape_courses(self):
         ''' Scrape courses '''
 
+        log.info('Updating courses')
+
         search_args = {}
         for key, value in self._kwargs.iteritems():
             if key in ['id', 'title'] and value is not None:
@@ -183,16 +183,12 @@ class Scraper(object):
             href = department['href']
             department_id = department['id']
             organization_id = department['organization']
-            log.info("Processing {}".format(href))
 
             full_url = self._noppa_url + href
 
             res = safe_urlopen(full_url)
 
             self._extract_courses(res, department_id, organization_id)
-
-            # Sleep 1 second to avoid too many HTTP requests/second to noppa
-            sleep(1)
 
         log.info('Done processing the departments!')
 
@@ -206,7 +202,6 @@ class Scraper(object):
         # Try to find the course from mongo with either using its id or title
         query = {}
         for key, value in kwargs.iteritems():
-            log.debug(value)
             query[key] = re.compile(re.escape(value), re.IGNORECASE)
 
         result = self._db.courses.find(query)
@@ -262,8 +257,7 @@ class Scraper(object):
             log.debug('Update data {}'.format(data))
             self._db.lectures.update(
                 {'_parent': _id, 'date': date},
-                {'$set': data}, safe=True, upsert=True
-                )
+                {'$set': data}, safe=True, upsert=True)
 
     def _scrape_assignments(self, course_url, _id):
         ''' Update the assignments for the given course '''
@@ -311,6 +305,7 @@ class Scraper(object):
                     text = td.get_text(strip=True)
                     text = generate_ISO_date(text)
                     date = text
+                    data[u'date'] = date
                 else:
                     # Get assignment title
                     text = td.find('a').get_text(strip=True)
@@ -320,8 +315,7 @@ class Scraper(object):
             log.debug('Update data {}'.format(data))
             self._db.assignments.update(
                 {'_parent': _id, 'deadline': date},
-                {'$set': data}, safe=True, upsert=True
-                )
+                {'$set': data}, safe=True, upsert=True)
 
     def _scrape_exams(self, course_url, _id, soup=None):
         ''' Update the exams for the given course '''
@@ -370,8 +364,7 @@ class Scraper(object):
             log.debug('Update data {}'.format(data))
             self._db.exams.update(
                 {'_parent': _id, 'date': date},
-                {'$set': data}, safe=True, upsert=True
-                )
+                {'$set': data}, safe=True, upsert=True)
 
     def _set_course_data(self, course_id, target, data):
         ''' Update a single course in the database setting its target field to data '''
@@ -381,8 +374,7 @@ class Scraper(object):
                 {'$set': {target: data}},
                 new=True,
                 upsert=True,
-                safe=True
-                )
+                safe=True)
         return doc.get('_id')
 
     ## course_lookup_data
@@ -415,8 +407,8 @@ class Scraper(object):
         total = courses.count()
         if  total == 0:
             log.warn(
-                'The course query returned nothing'
-                'for the given parameters!'
+                'The course query returned nothing '
+                'for the given parameters! '
                 'You could try running "scrape --id or --title" '
                 '<department> to scrape the course data from noppa'
                 )
@@ -436,36 +428,24 @@ class Scraper(object):
         soup = BeautifulSoup(res)
 
         if soup.find(id='notActive'):
-            log.info(u'Skipping inactive course {}'.format(course['title']))
+            log.info(u'[{index}/{total}] Skipping course {title} ({cid})'
+                .format(title=course['title'], cid=course['id'],
+                    index=index, total=total))
             self._set_course_data(course_code, 'isActive', False)
-            sleep(1)
         else:
             flags = kwargs
-            log.info(u'STARTING TO UPDATE COURSE {} ({}) [{}/{}]'
-                .format(
-                    course['title'],
-                    course['id'],
-                    index,
-                    total
-                )
-            )
+            log.info(u'[{index}/{total}] Updating course {title} ({cid})'
+                .format(title=course['title'], cid=course['id'],
+                    index=index, total=total))
+
             _id = self._set_course_data(course_code, 'isActive', True)
+
             if flags['lectures'] == True:
-                log.info('Updating lectures')
                 self._scrape_lectures(course_url, _id)
-                log.info('Done updating lectures!')
-                sleep(1)
             if flags['exams'] == True:
-                log.info('Updating exams')
                 self._scrape_exams(course_url, _id, soup=soup)
-                log.info('Done updating exams!')
-                sleep(1)
             if flags['assignments'] == True:
-                log.info('Updating assignments')
                 self._scrape_assignments(course_url, _id)
-                log.info('Done updating assignments!')
-                sleep(1)
-            log.info('DONE UPDATING THE COURSE!')
 
     def scrape(self):
         tasks = []

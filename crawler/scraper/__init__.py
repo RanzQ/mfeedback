@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*
 import argparse
 import logging
-
+from time import time
 from .scrapers import noppa
 
 log = logging.getLogger(__name__)
@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 def start(config={}):
     args = parser().parse_args()
 
+    start_time = time()
     log.info('STARTING UP!')
     log.debug('Arguments given: {}'.format(args))
 
@@ -23,6 +24,10 @@ def start(config={}):
             log.info('Undefined command! Exiting...')
     except KeyboardInterrupt:
         log.info('Interrupted! Exiting')
+
+    total_time = time() - start_time
+    log.info('It took {:.3} seconds to run all tasks'.format(total_time))
+    log.info('EXITING!')
 
 
 def parser():

@@ -6,22 +6,30 @@ import logging
 import pytz
 from datetime import datetime
 
-#{'': 0, 'Mar': 3, 'Feb': 2, 'Aug': 8, 'Sep': 9, 'Apr': 4, 'Jun': 6, 'Jul': 7, 'Jan': 1, 'May': 5, 'Nov': 11, 'Dec': 12, 'Oct': 10}
+#{'': 0, 'Mar': 3, 'Feb': 2, 'Aug': 8, 'Sep': 9, 'Apr': 4, 'Jun': 6, 'Jul': 7,
+# 'Jan': 1, 'May': 5, 'Nov': 11, 'Dec': 12, 'Oct': 10}
 month_to_int = dict((v, k) for k, v in enumerate(calendar.month_abbr))
+
 tl_dict = {
-        u'pvm': u'date',
-        u'klo': u'time',
-        u'päivä': u'day',
-        u'vko': u'week',
-        u'tila': u'location',
-        u'aihe': u'topic',
-        u'dl': u'deadline',
-        u'otsikko': u'title'
-    }
+    u'pvm': u'date',
+    u'klo': u'time',
+    u'päivä': u'day',
+    u'vko': u'week',
+    u'tila': u'location',
+    u'aihe': u'topic',
+    u'dl': u'deadline',
+    u'otsikko': u'title'
+}
 
 TIME_ZONE = 'Europe/Helsinki'
 
 log = logging.getLogger(__name__)
+
+cookies = {'org.apache.tapestry.locale': 'en'}
+session = requests.session(
+    cookies=cookies,
+    config={'max_retries': 3},
+    prefetch=True)
 
 
 def fin_to_eng(keyword):
@@ -31,11 +39,7 @@ def fin_to_eng(keyword):
 
 def safe_urlopen(url, exit_on_fail=True):
     log.debug('Opening connection to {}'.format(url))
-    r = requests.get(
-        url,
-        headers={'Cookie': 'org.apache.tapestry.locale=en'},
-        config={'max_retries': 3}
-        )
+    r = session.get(url)
     log.debug('Connection status {}'.format(r.status_code))
     return r.text
 

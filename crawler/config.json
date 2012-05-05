@@ -1,7 +1,9 @@
 {
-  "noppa_url": "http://noppa.aalto.fi", 
+  "noppa_url": "https://noppa.aalto.fi", 
   "courses_url": "/noppa/kurssit/",
   "course_url": "/noppa/kurssi/",
+
+  "db_name": "mfeedback",
 
   "logging": {
     "version": 1,
