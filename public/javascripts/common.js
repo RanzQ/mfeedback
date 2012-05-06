@@ -12,13 +12,46 @@ $(function() {
     });
 
     $('#feedback-form').submit(function(e) {
-      if($('#message').val() === '') {
+      if($('#feedback-message').val() === '') {
         e.preventDefault();
         return false;
       } 
     });
 
+    $('#submit-feedback').parent().hide();
 
+    $('#feedback-message').on('focus', function(e) {
+      $('#submit-feedback').parent().show();
+    });
+    $('#feedback-message').on('blur', function(e) {
+      $('#submit-feedback').parent().hide();
+    });
+
+    $('#cancel-reply').click(function(e) {
+      $('#feedback-dialog a[title="Close"]').click();
+      return false;
+    });
+
+    $('li.feedback').hover(function() {
+      $(this).css('cursor','pointer')
+             .removeClass('ui-btn-up-a')
+             .addClass('ui-btn-hover-a');
+    }, function() {
+      $(this).css('cursor','auto')
+             .addClass('ui-btn-up-a')
+             .removeClass('ui-btn-hover-a');
+    });
+
+    $('li.feedback').click(function(e) {
+      var $this = $(this)
+        , $id = $this.attr('data-feedback-id')
+        , $body = $this.children().clone();
+
+      $('#dialog-content').attr('data-feedback-id', $id);
+      $('#dialog-content .feedback').empty().append($body);
+      $('#open-dialog').click();
+      return false;
+    });
 
     $(".vote-button").click(function(e) {
         e.preventDefault();

@@ -43,7 +43,11 @@ function DatabaseProvider(dbName) {
           'index': true,
           'default': Date.now
         },
-        'body' : String
+        'body' : String,
+        'votes': {
+          'up' : Number,
+          'down' : Number
+        }
       })
 
     , LectureSchema = new Schema({

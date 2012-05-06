@@ -344,7 +344,7 @@ server._setupRoutes = function() {
     });
 
     /*
-     * POST lecture feedback or vote.
+     * POST lecture feedback, vote, feedback reply or feedback vote.
      */
 
     app.post('/course/:id/lecture/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
@@ -358,8 +358,6 @@ server._setupRoutes = function() {
 
       addFeedback(req, res, 'lectures', date);
     });
-
-
 
     /*
      * GET assignment feedback page.

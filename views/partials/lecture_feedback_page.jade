@@ -4,40 +4,100 @@ div(data-role='page', id='feedback-page', data-theme='a')
   include header
 
   div(data-role='content')
+
+    span #{title}:
+    h3 #{lecture.topic}
     
     div(class='messages')
 
-    a(href='#'
-    rel='external'
-    data-ajax='false'
-    type='button'
-    class='vote-button vote-button-up'
-    data-votetype='up'
-    data-inline='true'
-    data-theme='c')
-      span(class='upvotes')
-        = lecture.votes.up ? '+' + lecture.votes.up : ''
-      img(src='/public/images/thumbup_32.png')
+    div(class='ui-grid-a')
+      div(class='ui-block-a')
+        a(href='#'
+        rel='external'
+        data-ajax='false'
+        type='button'
+        class='vote-button vote-button-up'
+        data-votetype='up'
+        data-theme='c')
+          span(class='upvotes')
+            = lecture.votes.up ? '+' + lecture.votes.up : ''
+          img(src='/public/images/thumbup_32.png')
+      div(class='ui-block-b')
+        a(href='#'
+        rel='external'
+        data-ajax='false'
+        type='button'
+        class='vote-button vote-button-down'
+        data-votetype='down'
+        data-theme='d')
+          span(class='downvotes')
+            = lecture.votes.down ? '-' + lecture.votes.down : ''
+          img(src='/public/images/thumbdn_32.png')
 
-    a(href='#'
-    rel='external'
-    data-ajax='false'
-    type='button'
-    class='vote-button vote-button-down'
-    data-votetype='down'
-    data-inline='true'
-    data-theme='d')
-      span(class='downvotes')
-        = lecture.votes.down ? '-' + lecture.votes.down : ''
-      img(src='/public/images/thumbdn_32.png')
+    ul(data-role='listview', data-inset='true')
+      li(data-role='list-divider') Add feedback:
+      li
+        form(id='feedback-form', action='', method='post')
+          textarea(cols='40', rows='10', name='message', id='feedback-message', value='')
+          input(id='submit-feedback'
+          type='submit'
+          name='submit-feedback'
+          value='Submit')
 
-    form(id='feedback-form', action='', method='post')
-      ul(data-role='listview', data-inset='true')
-        li(data-role='list-divider')
-          |Feedback for lecture: #{ lecture.topic }
-        li: textarea(cols='40', rows='10', name='message', id='message', value='')
-        li: input(type='submit', name='submit-feedback', value='Submit')
+    ul(class='feedback-thread', data-role='listview', data-inset='true')
+      each feedback in lecture.feedbacks
+        li(class='feedback ui-btn-up-a', data-icon='false', data-feedback-id='#{feedback._id}')
+          div(class='feedback-header')
+            |#{dateFormat(feedback.date, 'mmmm dS yyyy, HH:MM')+': '}
+            div(class='thumbs')
+              span #{(feedback.votes.up) ? '-' + feedback.votes.up : '+3'}
+              // - if (feedback.votes.up)
+              img(class='thumb', src='/public/images/thumbup_32.png')
+              span #{(feedback.votes.down) ? '-' + feedback.votes.down : '-4'}
+              // - if (feedback.votes.down)
+              img(class='thumb', src='/public/images/thumbdn_32.png')
+          div(class='feedback-body')= feedback.body
+
+    a(id='open-dialog'
+    href='#feedback-dialog'
+    data-rel='dialog'
+    data-transition='pop'
+    style='display:none;')
 
   // /content
 
 // End of feedback page
+
+div(data-role='page', id='feedback-dialog')
+  div(data-role='header')
+    h1 Vote or reply
+  div(id='dialog-content', data-role='content', data-theme='a')
+
+    div(class='feedback')
+
+    div(class='ui-grid-a')
+      div(class='ui-block-a')
+        a(href='#'
+        rel='external'
+        data-ajax='false'
+        type='button'
+        class='vote-button vote-button-up'
+        data-votetype='up'
+        data-theme='c')
+          img(src='/public/images/thumbup_32.png')
+      div(class='ui-block-b')
+        a(href='#'
+        rel='external'
+        data-ajax='false'
+        type='button'
+        class='vote-button vote-button-down'
+        data-votetype='down'
+        data-theme='d')
+          img(src='/public/images/thumbdn_32.png')
+
+    textarea(cols='40', rows='10', name='message', id='reply-message', value='')
+    div(class='ui-grid-a')
+      div(class='ui-block-a')
+        a(id='submit-reply', href='#', class='reply-button', type='button') Reply
+      div(class='ui-block-b')
+        a(id='cancel-reply', href='#', class='reply-button', type='button') Cancel
