@@ -87,6 +87,7 @@ function DatabaseProvider(dbName) {
         },
         'title': String,
         'deadline': Date,
+        'date': Date,
         'feedbacks': [FeedbackSchema],
         'votes': {
           'up' : Number,
@@ -214,40 +215,83 @@ app.getCoursesByDepartment = function(depId,  activeOnly, callback) {
 app.getCourse = function(options, callback) {
   var self = this
     , cb = callback
-    , id = options.courseId;
+    , id = options.courseId
+    , filters = options.filters;
 
-    console.log(options);
+  console.log(options);
 
   this.courses.findOne({'id': id}, function(err, doc) {
+    console.log(err);
+    console.log(doc);
     if (err || !doc) {callback(err); return;}
 
     var course = doc;
     if (options.populateEvents === true) {
-      populateEvents(self, course, callback);
+      populateEvents(self, course, filters, callback);
     } else {
       callback(null, course);
     }
   });
 };
 
-function populateEvents(self, course, callback) {
+function populateEvents(self, course, filters, callback) {
+  console.log(filters);
+  var db_query = {'_parent': course._id};
+  for (var i in filters) {
+    db_query[i] = filters[i];
+  }
+  //console.log(db_query);
   self.assignments.find(
-      {'_parent': course._id}, [],
-      {'sort': {'deadline': 1}}, function(err, doc) {
-        course.assignments = doc;
+      db_query, [],
+      {'sort': {'deadline': -1}}, function(err, assignments) {
+        course.assignments = assignments;
         self.exams.find(
-            {'_parent': course._id}, [],
-            {'sort': {'date': 1}}, function(err, doc) {
-              course.exams = doc;
+            db_query, [],
+            {'sort': {'date': -1}}, function(err, exams) {
+              course.exams = exams;
               self.lectures.find(
-                  {'_parent': course._id}, [],
-                  {'sort': {'date': 1}}, function(err, doc) {
-                    course.lectures = doc;
+                  db_query, [],
+                  {'sort': {'date': -1}}, function(err, lectures) {
+                    course.lectures = lectures;
                     callback(null, course);
                   });
             });
       });
 }
+
+app.getPage = function(options, callback) {
+  console.log(options);
+  var self = this
+    , collection = options.collection
+    , courseId = options.courseId
+    , page = options.page
+    , itemsPerPage = options.perPage
+    , filters = options.filters;
+
+    // for (var i in filters) {
+    //   db_query[i] = filters[i];
+    // }
+
+    //console.log(db_query);
+
+    this.courses.findOne({'id': courseId}, function(err, course) {
+      //console.log(course);
+      var db_query = {'_parent': course._id};
+      for (var i in filters) {
+        db_query[i] = filters[i];
+      }
+      self[collection].find(db_query, [],
+      {
+        sort: {'date': -1},
+        skip: ((page-1)*itemsPerPage),
+        limit: itemsPerPage + 1
+      },
+      function(err, result) {
+        if (err) {callback(err); return;}
+        callback(null, result);
+      });
+    });
+};
 
 app.getLecture = function(options, callback) {
   var date = options.date

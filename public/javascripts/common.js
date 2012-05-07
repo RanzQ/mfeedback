@@ -78,6 +78,62 @@ $(function() {
         return false;
       });
 
+    $('.more').click(function(e) {
+      e.preventDefault();
+      var $this = $(this)
+        , eventType = $this.data('event-type')
+        , page = $this.data('page');
+
+      $this.attr('disabled', 'disabled');
+
+      var loc = window.location.href.toString()
+        , more_url = loc.endsWith('/') ? 'more' : '/more';
+
+      $.ajax({
+        type: "GET",
+        url: window.location + more_url,
+        data: ({'t': eventType, 'p': page}),
+        cache: false,
+        success: function(data) {
+          var res = data.res
+            , target = data.target;
+
+          //console.log(data.hasMore);
+
+          if (data.hasMore === 0) {
+            $this.parents('li').hide();
+          }
+
+          var c = null
+            , html = '';
+          for (var i=0, j=res.length; i<j; i++) {
+            c = res[i];
+
+            html = [
+            '<li>', 
+              '<a href="', c.full_url,'">',
+                c.title,
+              '</a>',
+              '<span class="ui-li-count">',
+                c.feedback_length,
+              '</span>',
+            '</li>'
+            ].join('');
+
+            //console.log(html);
+            
+            $(html).insertBefore(target);
+          }
+          $('.event-list').listview('refresh');
+          $this.data('page', data.nextPage);
+        },
+        complete: function() {
+          $this.removeAttr('disabled');
+        }
+      });
+      return false;
+    });
+
     $('#vote-form a').click(function() {
       if($(this).hasClass('vote-button-up')) {
         $('#vote-form input').val('up');
@@ -103,3 +159,7 @@ $(document).bind("mobileinit", function() {
   $.mobile.page.prototype.options.addBackBtn = true;
 
 });
+
+String.prototype.endsWith = function(suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+};

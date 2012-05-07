@@ -248,18 +248,87 @@ server._setupRoutes = function() {
 
     app.get('/course/:id', function(req, res) {
       var id = req.params.id.toLowerCase();
-      db.getCourse({'courseId': id, 'populateEvents': true}, function(error, course) {
-        if (error || !course) { res.send(res_404, 404); return; }  
-        var context = {
-          title: course.id.toUpperCase() + ' - ' + course.title,
-          course: course,
-          dateFormat: dateFormat
+      var midnight = new Date()
+        , twoWeeksAgo = new Date();
+      midnight.setHours(23, 59, 59, 99);
+      twoWeeksAgo.setHours(twoWeeksAgo.getHours() - 14*24, 59, 59);
+      db.getCourse({'courseId': id, 'populateEvents': true, 
+        'filters': {'date': {'$lt': midnight, '$gt': twoWeeksAgo}}},
+        function(error, course) {
+          if (error || !course) {res.send(res_404, 404); return;}
+          var context = {
+            title: course.id.toUpperCase() + ' - ' + course.title,
+            course: course,
+            dateFormat: dateFormat
+          };
+          if (req.xhr) {
+            res.partial('partials/course_page', context);
+          } else {
+            res.render('course', context);
+          }
+      });
+    });
+
+    app.get('/course/:id/more', function(req, res) {
+      var id = req.params.id.toLowerCase()
+        , eventType = req.query.t
+        , page = req.query.p
+        , perPage = 10
+        , twoWeeksAgo = new Date()
+        , dateString = ''
+        , target = ''
+        , title = null;
+      twoWeeksAgo.setHours(twoWeeksAgo.getHours() - 14*24, 59, 59);
+      var filters = {'date': {'$lt': twoWeeksAgo}};
+
+      
+
+      if (eventType === 'lecture') {
+        title = function(c) {
+          return dateFormat(c.date, 'dd mmm yy') + ' ' + c.topic;
         };
-        if (req.xhr) {
-          res.partial('partials/course_page', context);
-        } else {
-          res.render('course', context);
-        }
+        dateString = 'yyyymmdd';
+        target = '.lecture-list';
+      } else if (eventType === 'assignment') {
+        title = function(c) {
+          return c.title + ' (DL: ' + dateFormat(c.date, 'dd mmm yy') + ')';
+        };
+        dateString = 'yyyymmddHHMM';
+        target = '.assignment-list';
+      } else if (eventType === 'exam') {
+        title = function(c) {
+          return 'Exam: ' + dateFormat(c.date, 'dd mmm yy');
+        };
+        dateString = 'yyyymmdd';
+        target = '.exam-list';
+      } else {
+        res.send({'error': 'What?'});
+        return;
+      }
+      db.getPage({'courseId': id, 'page': page,
+        'perPage': perPage, 'filters': filters,
+        'collection': eventType + 's'},
+        function(err, result) {
+          var data = []
+            , c = null
+            , hasMore = 0
+            , base_url = ['/course', id, eventType].join('/');
+
+          if (result.length > perPage) {
+            hasMore = 1;
+          }
+
+          for (i = 0, j = result.length - hasMore; i < j; i++) {
+            c = result[i];
+            fl = c.feedbacks ? c.feedbacks.length : 0;
+            data.push({
+              'full_url': [base_url, dateFormat(c.date, dateString)].join('/'),
+              'title': title(c),
+              'feedback_length': fl
+            });
+          }
+          res.send({'res': data, 'hasMore': hasMore, 
+            'target': target, 'nextPage': parseInt(page, 10) + 1});
       });
     });
 
@@ -463,7 +532,7 @@ server._setupRoutes = function() {
   app.get('/search', function(req, res) {
     var query = req.query
       , db_query = query;
-    for (i in query) {
+    for (var i in query) {
       if (i !== 'q') {
         delete db_query[i];
       }
