@@ -124,9 +124,14 @@ server._setupRoutes = function() {
       var courseId = req.params.id.toLowerCase()
         , feedback = req.body.message
         , votetype = req.body.votetype
-        , fb = {'body': feedback, 'votetype': votetype}
+        , feedbackId = req.body.feedbackid
+        , fb = {'body': feedback, 'votetype': votetype, 'feedbackid': feedbackId}
         , isVote = (feedback === undefined)
         , voteId = courseId + eventType.substring(0,1) + date;
+
+      // If this is a feedback vote, set a different voteid
+      if (feedbackId) voteId = feedbackId;
+      
       // If this is a vote, check that the session is valid
       // If the session is not valid, return
       if (isVote && !checkSession(req, res, voteId)) {
@@ -134,24 +139,24 @@ server._setupRoutes = function() {
       }
 
       db.addFeedback(courseId, eventType, date, fb, function(error, result) {
-        console.log(result);
         if (error || !req.xhr) { res.send(res_404, 404); return; }
           // If feedback is undefined, this is either an upvote or downvote
           // so we should respond with json
-          if (isVote) {
-            // Save the voteId to session so user can't vote again during
-            // this session
-            var session = req.session;
-            session.votesCast[voteId] = true;
-            session.save();
-            res.contentType('json');
-            res.send({'msg': 'Thank you for your vote!', 'votes': result.votes});
-          } else {
-            res.partial('partials/thank_you_page', {
-              title: 'Thank you!',
-              back_url: '/course/' + courseId
-            });
-          }
+
+          // if (isVote) {
+          //   // Save the voteId to session so user can't vote again during
+          //   // this session
+          //   var session = req.session;
+          //   session.votesCast[voteId] = true;
+          //   session.save();
+          //   res.contentType('json');
+          //   res.send({'msg': 'Thank you for your vote!', 'votes': result.votes});
+          // } else {
+          //   res.partial('partials/thank_you_page', {
+          //     title: 'Thank you!',
+          //     back_url: '/course/' + courseId
+          //   });
+          // }
       });
     }
 

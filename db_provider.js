@@ -37,7 +37,12 @@ function DatabaseProvider(dbName) {
       }
   });
 
-  var FeedbackSchema = new Schema({
+  var ReplySchema = new Schema({
+        'date': Date,
+        'body': String
+      })
+
+    , FeedbackSchema = new Schema({
         'date' : {
           'type': Date,
           'index': true,
@@ -47,7 +52,8 @@ function DatabaseProvider(dbName) {
         'votes': {
           'up' : Number,
           'down' : Number
-        }
+        },
+        'replies': [ReplySchema]
       })
 
     , LectureSchema = new Schema({
@@ -443,18 +449,21 @@ app.addExam = function(courseId, exam, callback) {
  */
 app.addFeedback = function(courseId, type, date, feedback, callback) {
   var self = this
-    , update_query = {};
+    , update_query = {}
+    , vote = {}
+    , timestamp = new Date()
+    , feedbackBody = {}
+    , feedbackid = feedback.feedbackid;
 
   if (feedback.body === undefined) {
-    var vote = {};
     vote['votes.' + feedback.votetype] = 1;
     update_query = {'$inc': vote};
   } else {
-    var timestamp = new Date()
-      , feedbackBody = {'body': feedback.body, 'date': timestamp};
-    update_query = {'$push': {'feedbacks': feedbackBody}};
-
+    feedbackBody = {'body': feedback.body, 'date': timestamp};
+    //update_query = {'$push': {'feedbacks': feedbackBody}};
   }
+
+  console.log('db_provider 466:', feedback);
 
   if (type === 'course') {
     self.courses.update(
@@ -468,17 +477,58 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
     return;
   }
 
-  console.log(update_query);
+  console.log('db_provider 480:', update_query);
 
-  self.courses.findOne({'id': courseId}, {'_id': 1}, function(err, doc) {
-    console.log('AT LEAST WE ARE GETTING THIS FAR');
-    self[type].findAndModify(
-      {'_parent': doc._id, 'date': date}, [],
-      update_query, {'new': true},
-      function(err, doc) {
-        if (err || !doc) {callback(err); return;}
-        callback(err, doc);
-      }
-    );
-  });
+    self.courses.findOne({'id': courseId}, {'_id': 1}, function(err, doc) {
+      // Case: add a vote
+      if (feedbackid === undefined && feedback.body === undefined) {
+        self[type].findAndModify(
+          {'_parent': doc._id, 'date': date}, [],
+          update_query, {'new': true},
+          function(err, doc) {
+            if (err || !doc) {callback(err); return;}
+            callback(err, doc);
+          }
+        );
+      } else {
+        self[type].findOne({'_parent': doc._id, 'date': date}, function(err, doc) {
+          if (err || !doc) {callback(err); return;}
+
+          if (feedbackid === undefined) {
+            // Case: add new feedback
+            doc.feedbacks.push(feedbackBody);
+          } else {
+            var fb = doc.feedbacks.id(feedbackid);
+            console.log('db_provider 502:', fb);
+            if (feedback.votetype === undefined) {
+              // Case: add reply to feedback
+              fb.replies.push(feedbackBody);
+              console.log('db_provider 506:', fb);
+            } else {
+              // Case: add vote for feedback
+              if(!fb.votes) fb.votes = {};
+              if (feedback.votetype === 'down') {
+                if(!fb.votes.down) {
+                  fb.votes.down = 1;
+                } else {
+                  fb.votes.down++;
+                }
+              } else {
+                if(!fb.votes.up) {
+                  fb.votes.up = 1;
+                } else {
+                  fb.votes.up++;
+                }
+              }
+              console.log('db_provider 522:', fb);
+            }
+          }
+          doc.save(function(err, doc) {
+            callback(err, doc);
+          });
+        });
+      } 
+
+    });
+
 };

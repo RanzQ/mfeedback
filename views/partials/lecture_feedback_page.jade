@@ -45,18 +45,24 @@ div(data-role='page', id='feedback-page', data-theme='a')
           value='Submit')
 
     ul(class='feedback-thread', data-role='listview', data-inset='true')
-      each feedback in lecture.feedbacks
+      - var feedbacks = lecture.feedbacks.reverse()
+      each feedback in feedbacks
         li(class='feedback ui-btn-up-a', data-icon='false', data-feedback-id='#{feedback._id}')
           div(class='feedback-header')
             |#{dateFormat(feedback.date, 'mmmm dS yyyy, HH:MM')+': '}
             div(class='thumbs')
-              span #{(feedback.votes.up) ? '-' + feedback.votes.up : '+3'}
-              // - if (feedback.votes.up)
-              img(class='thumb', src='/public/images/thumbup_32.png')
-              span #{(feedback.votes.down) ? '-' + feedback.votes.down : '-4'}
-              // - if (feedback.votes.down)
-              img(class='thumb', src='/public/images/thumbdn_32.png')
+              - if (feedback.votes.up)
+                span #{'+' + feedback.votes.up}
+                img(class='thumb', src='/public/images/thumbup_32.png')
+              - if (feedback.votes.down)
+                span #{'-' + feedback.votes.down}
+                img(class='thumb', src='/public/images/thumbdn_32.png')
           div(class='feedback-body')= feedback.body
+          each reply in feedback.replies
+            div(class='reply ui-li ui-li-static ui-corner-all')
+              div(class='feedback-header')
+                |#{dateFormat(reply.date, 'mmmm dS yyyy, HH:MM')+': '}
+              div(class='feedback-body')= reply.body
 
     a(id='open-dialog'
     href='#feedback-dialog'
@@ -81,7 +87,7 @@ div(data-role='page', id='feedback-dialog')
         rel='external'
         data-ajax='false'
         type='button'
-        class='vote-button vote-button-up'
+        class='dialog vote-button vote-button-up'
         data-votetype='up'
         data-theme='c')
           img(src='/public/images/thumbup_32.png')
@@ -90,7 +96,7 @@ div(data-role='page', id='feedback-dialog')
         rel='external'
         data-ajax='false'
         type='button'
-        class='vote-button vote-button-down'
+        class='dialog vote-button vote-button-down'
         data-votetype='down'
         data-theme='d')
           img(src='/public/images/thumbdn_32.png')
