@@ -4,7 +4,7 @@ $(function() {
 
 });
 
-$(document).on('pageinit', function(){
+$(document).on('pageshow', function(){
 
   $('#search-form').submit(function(e) {
     if($('#query').val() === '') {
@@ -12,6 +12,9 @@ $(document).on('pageinit', function(){
       return false;
     } 
   });
+
+  $('#feedback-dialog').hide();
+  $('#feedback-dialog').data('hidden', true);
 
   $('#feedback-form').submit(function(e) {
     if($('#feedback-message').val() === '') {
@@ -29,36 +32,37 @@ $(document).on('pageinit', function(){
   //   $('#submit-feedback').parent().hide();
   // });
 
-  $('#cancel-reply').click(function(e) {
-    $('#feedback-dialog a[title="Close"]').click();
+  $('body').on('vclick', '#cancel-reply',function(e) {
+    $('#feedback-dialog').hide();
     return false;
   });
 
-  $('#submit-reply').click(function(e) {
-    feedbackid = $('#dialog-content').data('feedback-id');
+  $('body').on('vclick', '#submit-reply',function(e) {
+    if($('#reply-message').val() === '') return false;
 
-    message = $('#reply-message').val();
-    console.log(message);
+    $('#reply-form').submit();
 
-    if(feedbackid !== undefined) {
-      $.ajax({
-        type: "POST",
-        url: window.location,
-        data: ({'feedbackid': feedbackid,
-                'message': message}),
-        cache: false//,
-        // success: function(data) {
-        //   $('.messages').text(data.msg);
-        //   if (data.votes) {
-        //     var upvotes = data.votes.up ? '+' + data.votes.up : ''
-        //       , downvotes = data.votes.down ? '-' + data.votes.down : '';
-        //     $('.upvotes').text(upvotes);
-        //     $('.downvotes').text(downvotes);
-        //   }
-        // }
-      });
-    }
+    // if(feedbackid !== undefined) {
+    //   $.ajax({
+    //     type: "POST",
+    //     url: window.location,
+    //     data: ({'feedbackid': feedbackid,
+    //             'message': message}),
+    //     cache: false,
+    //     success: function(data) {
+    //       $(document.getElementById('#feedback-page')).remove();
+    //       $.mobile.changePage('#feedback-page');
+    //     }
+    //   });
+    // }
 
+    return false;
+  });
+
+  $('body').on('vclick', '.dialog-vote-button',function(e) {
+    $('#dialog-votetype').val($(this).data('votetype'));
+    $('#reply-message').val('');
+    $('#reply-form').submit();
     return false;
   });
 
@@ -72,52 +76,47 @@ $(document).on('pageinit', function(){
            .removeClass('ui-btn-hover-a');
   });
 
-  $('li.feedback').click(function(e) {
-    var $this = $(this)
-      , $id = $this.data('feedback-id')
-      , $body = $this.children().clone();
+  $('body').on('vclick', 'li.feedback', function(e) {
 
-    console.log($id);
-    $('#dialog-content').data('feedback-id', $id);
-    $('#dialog-content .feedback').empty().append($body);
-    $('#open-dialog').click();
-    return false;
+    var $dialog = $('#feedback-dialog');
+
+
+    var $this = $(this)
+      , $id = $this.data('feedback-id');
+
+    $('#dialog-feedbackid').val($id);
+    $('#feedback-dialog').appendTo($this).show();
+    $('#reply-message').focus();
+
   });
 
-  $(".vote-button").click(function(e) {
+  $(".vote-button").on('vclick', function(e) {
     e.preventDefault();
     var $this = $(this)
       , votetype = $this.data('votetype')
       , feedbackid;
 
-    // Check if the button was from dialog
-    if($this.hasClass('dialog')) {
-      feedbackid = $('#dialog-content').data('feedback-id');
-      console.log(feedbackid);
-    }
-
     if(votetype !== undefined) {
       $.ajax({
         type: "POST",
         url: window.location,
-        data: ({'votetype': votetype,
-                'feedbackid': feedbackid}),
-        cache: false//,
-        // success: function(data) {
-        //   $('.messages').text(data.msg);
-        //   if (data.votes) {
-        //     var upvotes = data.votes.up ? '+' + data.votes.up : ''
-        //       , downvotes = data.votes.down ? '-' + data.votes.down : '';
-        //     $('.upvotes').text(upvotes);
-        //     $('.downvotes').text(downvotes);
-        //   }
-        // }
+        data: ({'votetype': votetype}),
+        cache: false,
+        success: function(data) {
+          $('.messages').text(data.msg);
+          if (data.votes) {
+            var upvotes = data.votes.up ? '+' + data.votes.up : ''
+              , downvotes = data.votes.down ? '-' + data.votes.down : '';
+            $('.upvotes').text(upvotes);
+            $('.downvotes').text(downvotes);
+          }
+        }
       });
     }
     return false;
   });
 
-  $('.more').click(function(e) {
+  $('.more').on('vclick', function(e) {
     e.preventDefault();
     var $this = $(this)
       , eventType = $this.data('event-type')
@@ -171,15 +170,6 @@ $(document).on('pageinit', function(){
       }
     });
     return false;
-  });
-
-  $('#vote-form a').click(function() {
-    if($(this).hasClass('vote-button-up')) {
-      $('#vote-form input').val('up');
-    } else {
-      $('#vote-form input').val('down');
-    }
-    $('#vote-form').submit();
   });
 
 });

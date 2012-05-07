@@ -122,19 +122,20 @@ server._setupRoutes = function() {
 
     function addFeedback(req, res, eventType, date) {
       var courseId = req.params.id.toLowerCase()
-        , feedback = req.body.message
-        , votetype = req.body.votetype
-        , feedbackId = req.body.feedbackid
+        , feedback = (req.body.message === '') ? undefined : req.body.message
+        , votetype = (req.body.votetype === '') ? undefined : req.body.votetype
+        , feedbackId = (req.body.feedbackid === '') ? undefined : req.body.feedbackid
         , fb = {'body': feedback, 'votetype': votetype, 'feedbackid': feedbackId}
         , isVote = (feedback === undefined)
+        , isReply = (feedbackId !== undefined && !isVote)
         , voteId = courseId + eventType.substring(0,1) + date;
 
       // If this is a feedback vote, set a different voteid
-      if (feedbackId) voteId = feedbackId;
+      // if (feedbackId) voteId = feedbackId;
       
       // If this is a vote, check that the session is valid
       // If the session is not valid, return
-      if (isVote && !checkSession(req, res, voteId)) {
+      if (isVote && !feedbackId && !checkSession(req, res, voteId)) {
           return;
       }
 
@@ -143,20 +144,27 @@ server._setupRoutes = function() {
           // If feedback is undefined, this is either an upvote or downvote
           // so we should respond with json
 
-          // if (isVote) {
-          //   // Save the voteId to session so user can't vote again during
-          //   // this session
-          //   var session = req.session;
-          //   session.votesCast[voteId] = true;
-          //   session.save();
-          //   res.contentType('json');
-          //   res.send({'msg': 'Thank you for your vote!', 'votes': result.votes});
-          // } else {
-          //   res.partial('partials/thank_you_page', {
-          //     title: 'Thank you!',
-          //     back_url: '/course/' + courseId
-          //   });
-          // }
+          if (isVote && !feedbackId) {
+            // Save the voteId to session so user can't vote again during
+            // this session
+            var session = req.session;
+            session.votesCast[voteId] = true;
+            session.save();
+            res.contentType('json');
+            res.send({'msg': 'Thank you for your vote!', 'votes': result.votes});
+          } else if (eventType === 'course') {
+            res.partial('partials/thank_you_page', {
+              title: 'Thank you!',
+              back_url: '/course/' + courseId
+            });
+          } else {
+            var context = {
+              title: courseId.toUpperCase() + ' - Lecture ' + dateFormat(result.date, 'dd mmm yy'),
+              lecture: result,
+              dateFormat: dateFormat
+            };
+            res.partial('partials/lecture_feedback_page', context);
+          }
       });
     }
 
@@ -429,7 +437,7 @@ server._setupRoutes = function() {
 
       date.setFullYear(y,m-1,d);
       date.setHours(0, 0, 0, 0);
-
+      console.log(req.body);
       addFeedback(req, res, 'lectures', date);
     });
 

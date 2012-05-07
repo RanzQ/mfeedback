@@ -453,35 +453,37 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
     , vote = {}
     , timestamp = new Date()
     , feedbackBody = {}
-    , feedbackid = feedback.feedbackid;
+    , feedbackid = feedback.feedbackid
+    , isNew = (feedbackid === undefined)
+    , isVote = (feedback.body === undefined);
 
-  if (feedback.body === undefined) {
+  if (isVote) {
     vote['votes.' + feedback.votetype] = 1;
     update_query = {'$inc': vote};
   } else {
     feedbackBody = {'body': feedback.body, 'date': timestamp};
-    //update_query = {'$push': {'feedbacks': feedbackBody}};
   }
 
-  console.log('db_provider 466:', feedback);
+  // console.log('db_provider 466:', feedback);
 
+  // Case: course feedback
   if (type === 'course') {
-    self.courses.update(
-      {'id': courseId}, 
-      update_query,
-      function(err, doc) {
+    self.courses.findOne( {'id': courseId}, function(err, doc) {
         if (err || !doc) {callback(err); return;}
-        callback(err, doc);
+        doc.feedbacks.push(feedbackBody);
+        doc.save(function(err, doc) {
+          callback(err, doc);
+        });        
       }
     );
     return;
   }
 
-  console.log('db_provider 480:', update_query);
+  // console.log('db_provider 480:', update_query);
 
     self.courses.findOne({'id': courseId}, {'_id': 1}, function(err, doc) {
       // Case: add a vote
-      if (feedbackid === undefined && feedback.body === undefined) {
+      if (feedbackid === undefined && isVote) {
         self[type].findAndModify(
           {'_parent': doc._id, 'date': date}, [],
           update_query, {'new': true},
@@ -494,16 +496,16 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
         self[type].findOne({'_parent': doc._id, 'date': date}, function(err, doc) {
           if (err || !doc) {callback(err); return;}
 
-          if (feedbackid === undefined) {
+          if (isNew) {
             // Case: add new feedback
             doc.feedbacks.push(feedbackBody);
           } else {
             var fb = doc.feedbacks.id(feedbackid);
-            console.log('db_provider 502:', fb);
-            if (feedback.votetype === undefined) {
+            // console.log('db_provider 502:', fb);
+            if (!isVote) {
               // Case: add reply to feedback
               fb.replies.push(feedbackBody);
-              console.log('db_provider 506:', fb);
+              // console.log('db_provider 506:', fb);
             } else {
               // Case: add vote for feedback
               if(!fb.votes) fb.votes = {};
@@ -520,7 +522,7 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
                   fb.votes.up++;
                 }
               }
-              console.log('db_provider 522:', fb);
+              console.log('db_provider 523:', fb);
             }
           }
           doc.save(function(err, doc) {

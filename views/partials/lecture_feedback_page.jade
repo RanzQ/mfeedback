@@ -70,40 +70,38 @@ div(data-role='page', id='feedback-page', data-theme='a')
     data-transition='pop'
     style='display:none;')
 
+    div(id='feedback-dialog', style='display: none;')
+      //- div(data-role='header')
+      //-   h1 Vote or reply
+      //- div(id='dialog-content', data-role='content', data-theme='a')
+
+      form(id='reply-form', method='POST', action='')
+        div(class='ui-grid-a')
+          div(class='ui-block-a')
+            a(href='#'
+            type='button'
+            class='dialog-vote-button'
+            data-votetype='up'
+            data-theme='c')
+              img(src='/public/images/thumbup_32.png')
+          div(class='ui-block-b')
+            a(href='#'
+            type='button'
+            class='dialog-vote-button'
+            data-votetype='down'
+            data-theme='d')
+              img(src='/public/images/thumbdn_32.png')
+        input(type='hidden', name='feedbackid', id='dialog-feedbackid')
+        input(type='hidden', name='votetype', id='dialog-votetype')
+        textarea(cols='40', rows='10', name='message', id='reply-message', value='')
+        div(class='ui-grid-a')
+          div(class='ui-block-a')
+            a(id='submit-reply', href='#', class='reply-button', type='button') Reply
+          div(class='ui-block-b')
+            a(id='cancel-reply', href='#', class='reply-button', type='button') Cancel
+
   // /content
 
 // End of feedback page
 
-div(data-role='page', id='feedback-dialog')
-  div(data-role='header')
-    h1 Vote or reply
-  div(id='dialog-content', data-role='content', data-theme='a')
 
-    div(class='feedback')
-
-    div(class='ui-grid-a')
-      div(class='ui-block-a')
-        a(href='#'
-        rel='external'
-        data-ajax='false'
-        type='button'
-        class='dialog vote-button vote-button-up'
-        data-votetype='up'
-        data-theme='c')
-          img(src='/public/images/thumbup_32.png')
-      div(class='ui-block-b')
-        a(href='#'
-        rel='external'
-        data-ajax='false'
-        type='button'
-        class='dialog vote-button vote-button-down'
-        data-votetype='down'
-        data-theme='d')
-          img(src='/public/images/thumbdn_32.png')
-
-    textarea(cols='40', rows='10', name='message', id='reply-message', value='')
-    div(class='ui-grid-a')
-      div(class='ui-block-a')
-        a(id='submit-reply', href='#', class='reply-button', type='button') Reply
-      div(class='ui-block-b')
-        a(id='cancel-reply', href='#', class='reply-button', type='button') Cancel
