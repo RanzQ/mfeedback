@@ -2,121 +2,7 @@ $(function() {
 
   mFeedback.randomizeLogo();
 
-});
-
-$(document).on('pageshow', function(){
-
-  $('#search-form').submit(function(e) {
-    if($('#query').val() === '') {
-      e.preventDefault();
-      return false;
-    } 
-  });
-
-  $('#feedback-dialog').hide();
-  $('#feedback-dialog').data('hidden', true);
-
-  $('#feedback-form').submit(function(e) {
-    if($('#feedback-message').val() === '') {
-      e.preventDefault();
-      return false;
-    } 
-  });
-
-  $('#submit-feedback').parent().hide();
-
-  $('#feedback-message').on('focus', function(e) {
-    $('#submit-feedback').parent().show();
-  });
-  // $('#feedback-message').on('blur', function(e) {
-  //   $('#submit-feedback').parent().hide();
-  // });
-
-  $('body').on('vclick', '#cancel-reply',function(e) {
-    $('#feedback-dialog').hide();
-    return false;
-  });
-
-  $('body').on('vclick', '#submit-reply',function(e) {
-    if($('#reply-message').val() === '') return false;
-
-    $('#reply-form').submit();
-
-    // if(feedbackid !== undefined) {
-    //   $.ajax({
-    //     type: "POST",
-    //     url: window.location,
-    //     data: ({'feedbackid': feedbackid,
-    //             'message': message}),
-    //     cache: false,
-    //     success: function(data) {
-    //       $(document.getElementById('#feedback-page')).remove();
-    //       $.mobile.changePage('#feedback-page');
-    //     }
-    //   });
-    // }
-
-    return false;
-  });
-
-  $('body').on('vclick', '.dialog-vote-button',function(e) {
-    $('#dialog-votetype').val($(this).data('votetype'));
-    $('#reply-message').val('');
-    $('#reply-form').submit();
-    return false;
-  });
-
-  $('li.feedback').hover(function() {
-    $(this).css('cursor','pointer')
-           .removeClass('ui-btn-up-a')
-           .addClass('ui-btn-hover-a');
-  }, function() {
-    $(this).css('cursor','auto')
-           .addClass('ui-btn-up-a')
-           .removeClass('ui-btn-hover-a');
-  });
-
-  $('body').on('vclick', 'li.feedback', function(e) {
-
-    var $dialog = $('#feedback-dialog');
-
-
-    var $this = $(this)
-      , $id = $this.data('feedback-id');
-
-    $('#dialog-feedbackid').val($id);
-    $('#feedback-dialog').appendTo($this).show();
-    $('#reply-message').focus();
-
-  });
-
-  $(".vote-button").on('vclick', function(e) {
-    e.preventDefault();
-    var $this = $(this)
-      , votetype = $this.data('votetype')
-      , feedbackid;
-
-    if(votetype !== undefined) {
-      $.ajax({
-        type: "POST",
-        url: window.location,
-        data: ({'votetype': votetype}),
-        cache: false,
-        success: function(data) {
-          $('.messages').text(data.msg);
-          if (data.votes) {
-            var upvotes = data.votes.up ? '+' + data.votes.up : ''
-              , downvotes = data.votes.down ? '-' + data.votes.down : '';
-            $('.upvotes').text(upvotes);
-            $('.downvotes').text(downvotes);
-          }
-        }
-      });
-    }
-    return false;
-  });
-
-  $('.more').on('vclick', function(e) {
+  $('body').on('click', '.more' , function(e) {
     e.preventDefault();
     var $this = $(this)
       , eventType = $this.data('event-type')
@@ -170,6 +56,121 @@ $(document).on('pageshow', function(){
       }
     });
     return false;
+  });
+
+  $('body').on('click', '#cancel-reply',function(e) {
+    $('#feedback-dialog').hide();
+    return false;
+  });
+
+  $('body').on('click', '#submit-reply',function(e) {
+    if($('#reply-message').val() === '') return false;
+
+    $('#reply-form').submit();
+
+    // if(feedbackid !== undefined) {
+    //   $.ajax({
+    //     type: "POST",
+    //     url: window.location,
+    //     data: ({'feedbackid': feedbackid,
+    //             'message': message}),
+    //     cache: false,
+    //     success: function(data) {
+    //       $(document.getElementById('#feedback-page')).remove();
+    //       $.mobile.changePage('#feedback-page');
+    //     }
+    //   });
+    // }
+
+    return false;
+  });
+
+  $('body').on('click', '.dialog-vote-button',function(e) {
+    $('#dialog-votetype').val($(this).data('votetype'));
+    $('#reply-message').val('');
+    $('#reply-form').submit();
+    return false;
+  });
+
+  $('body').on('click', 'li.feedback', function(e) {
+
+    var $dialog = $('#feedback-dialog');
+
+
+    var $this = $(this)
+      , $id = $this.data('feedback-id');
+
+    $('#dialog-feedbackid').val($id);
+    $('#feedback-dialog').appendTo($this).show();
+    $('#reply-message').focus();
+
+  });
+
+  $("body").on('click', '.vote-button', function(e) {
+    e.preventDefault();
+    var $this = $(this)
+      , votetype = $this.data('votetype')
+      , feedbackid;
+
+    if(votetype !== undefined) {
+      $.ajax({
+        type: "POST",
+        url: window.location,
+        data: ({'votetype': votetype}),
+        cache: false,
+        success: function(data) {
+          $('.messages').text(data.msg);
+          if (data.votes) {
+            var upvotes = data.votes.up ? '+' + data.votes.up : ''
+              , downvotes = data.votes.down ? '-' + data.votes.down : '';
+            $('.upvotes').text(upvotes);
+            $('.downvotes').text(downvotes);
+          }
+        }
+      });
+    }
+    return false;
+  });
+
+
+});
+
+$(document).on('pageshow', function(){
+
+  // $('#search-form').submit(function(e) {
+  //   if($('#query').val() === '') {
+  //     e.preventDefault();
+  //     return false;
+  //   } 
+  // });
+
+  $('#feedback-dialog').hide();
+  $('#feedback-dialog').data('hidden', true);
+
+  // $('#feedback-form').submit(function(e) {
+  //   if($('#feedback-message').val() === '') {
+  //     e.preventDefault();
+  //     return false;
+  //   } 
+  // });
+
+  $('#submit-feedback').parent().hide();
+
+  $('#feedback-message').on('focus', function(e) {
+    $('#submit-feedback').parent().show();
+  });
+  // $('#feedback-message').on('blur', function(e) {
+  //   $('#submit-feedback').parent().hide();
+  // });
+
+  $('li.feedback').hover(function() {
+    $(this).css('cursor','pointer')
+           .removeClass('ui-btn-up-a')
+           .addClass('ui-btn-hover-a');
+  }, function() {
+    $(this).css('cursor','auto')
+           .addClass('ui-btn-up-a')
+           .removeClass('ui-btn-hover-a');
   });
 
 });
