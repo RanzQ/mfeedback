@@ -160,16 +160,16 @@ server._setupRoutes = function() {
               'votes': result.votes
               //'feedbackId': feedbackId
             });
-          } else if (eventType === 'course') {
+          } else if (courseEventType === 'course') {
             res.partial('partials/thank_you_page', {
               title: 'Thank you!',
               back_url: '/course/' + courseId
             });
           } else {
             var context = {
-              preTitle: id.toUpperCase() + ' - ' + type.toUpperCase().charAt(0) + type.substring(1) + ' ' + dateFormat(event.date, 'dd mmm yy'),
-              title: event.topic? event.topic : (event.title? event.title : ''),
-              event: event,
+              preTitle: id.toUpperCase() + ' - ' + type.toUpperCase().charAt(0) + type.substring(1) + ' ' + dateFormat(courseEvent.date, 'dd mmm yy'),
+              title: courseEvent.topic? courseEvent.topic : (courseEvent.title? courseEvent.title : ''),
+              courseEvent: courseEvent,
               dateFormat: dateFormat
             };
             if (req.xhr) {
@@ -433,13 +433,13 @@ server._setupRoutes = function() {
       date.setFullYear(y,m-1,d);
       date.setHours( h? h : 0, min? min : 0, 0, 0);
 
-      db.getCourseEvent({'courseId': id, 'type': type, 'date':date}, function(error, event) {
-        if (error || !event) { res.send(res_404, 404); return; }
-        console.log(event);
+      db.getCourseEvent({'courseId': id, 'type': type, 'date':date}, function(error, courseEvent) {
+        if (error || !courseEvent) { res.send(res_404, 404); return; }
+        console.log(courseEvent);
         var context = {
-          preTitle: id.toUpperCase() + ' - ' + type.toUpperCase().charAt(0) + type.substring(1) + ' ' + dateFormat(event.date, 'dd mmm yy'),
-          title: event.topic? event.topic : (event.title? event.title : ''),
-          event: event,
+          preTitle: id.toUpperCase() + ' - ' + type.toUpperCase().charAt(0) + type.substring(1) + ' ' + dateFormat(courseEvent.date, 'dd mmm yy'),
+          title: courseEvent.topic? courseEvent.topic : (courseEvent.title? courseEvent.title : ''),
+          courseEvent: courseEvent,
           dateFormat: dateFormat
         };
         if (req.xhr) {
