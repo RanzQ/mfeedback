@@ -86,9 +86,36 @@ $(function() {
   });
 
   $('body').on('click', '.dialog-vote-button',function(e) {
-    $('#dialog-votetype').val($(this).data('votetype'));
-    $('#reply-message').val('');
-    $('#reply-form').submit();
+    e.preventDefault();
+    var $this = $(this)
+      , votetype = $this.data('votetype')
+      , feedbackid = $this.parents('.feedback').data('feedback-id');
+
+    if(votetype !== undefined) {
+      $.ajax({
+        type: "POST",
+        url: window.location,
+        data: ({'feedbackid': feedbackid, 'votetype': votetype}),
+        cache: false,
+        success: function(data) {
+          $('.messages').text(data.msg);
+          if (data.votes) {
+            var upvotes = data.votes.up ? '+' + data.votes.up : ''
+              , downvotes = data.votes.down ? '-' + data.votes.down : ''
+              , up = feedbackid + '-up'
+              , down = feedbackid + '-down';
+
+            $('#' + up).text(upvotes);
+            if (upvotes !== '')
+              $('.' + up + '.thumb').show();
+
+            $('#' + down).text(downvotes);
+            if (downvotes !== '')
+              $('.' + down + '.thumb').show();
+          }
+        }
+      });
+    }
     return false;
   });
 

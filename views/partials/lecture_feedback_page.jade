@@ -49,48 +49,69 @@ div(data-role='page', id='feedback-page', data-theme='a')
       each feedback in feedbacks
         li(class='feedback ui-btn-up-a', data-icon='false', data-feedback-id='#{feedback._id}')
           div(class='feedback-header')
-            |#{dateFormat(feedback.date, 'mmmm dS yyyy, HH:MM')+': '}
+            |#{dateFormat(feedback.date, 'mmmm dS yyyy, HH:MM')}: 
             div(class='thumbs')
-              - if (feedback.votes.up)
-                span #{'+' + feedback.votes.up}
-                img(class='thumb', src='/public/images/thumbup_32.png')
-              - if (feedback.votes.down)
-                span #{'-' + feedback.votes.down}
-                img(class='thumb', src='/public/images/thumbdn_32.png')
+              span
+                if (feedback.votes.up)
+                  span(id='#{feedback._id}-up')
+                    = '+' + feedback.votes.up
+                  img(class='#{feedback._id}-up thumb'
+                    src='/public/images/thumbup_32.png')
+                else
+                  span(id='#{feedback._id}-up')
+                  img(class='#{feedback._id}-up thumb'
+                    style='display:none;'
+                    src='/public/images/thumbup_32.png')
+              span
+                if (feedback.votes.down)
+                  span(id='#{feedback._id}-down')
+                      = '-' + feedback.votes.down
+                  img(class='#{feedback._id}-down thumb'
+                    src='/public/images/thumbdn_32.png')
+                else
+                  span(id='#{feedback._id}-down')
+                  img(class='#{feedback._id}-down thumb'
+                    style='display:none;'
+                    src='/public/images/thumbdn_32.png')
+                  
           div(class='feedback-body')= feedback.body
           each reply in feedback.replies
             div(class='reply ui-li ui-li-static ui-corner-all')
               div(class='feedback-header')
-                |#{dateFormat(reply.date, 'mmmm dS yyyy, HH:MM')+': '}
+                |#{dateFormat(reply.date, 'mmmm dS yyyy, HH:MM')}: 
               div(class='feedback-body')= reply.body
 
     a(id='open-dialog'
-    href='#feedback-dialog'
-    data-rel='dialog'
-    data-transition='pop'
-    style='display:none;')
+      href='#feedback-dialog'
+      data-rel='dialog'
+      data-transition='pop'
+      style='display:none;')
 
     div(id='feedback-dialog', style='display: none;')
       //- div(data-role='header')
       //-   h1 Vote or reply
       //- div(id='dialog-content', data-role='content', data-theme='a')
+      div(class='ui-grid-a')
+        div(class='ui-block-a')
+          a(href='#'
+          rel='external'
+          data-ajax='false'
+          type='button'
+          class='dialog-vote-button'
+          data-votetype='up'
+          data-theme='c')
+            img(src='/public/images/thumbup_32.png')
+        div(class='ui-block-b')
+          a(href='#'
+          rel='external'
+          data-ajax='false'
+          type='button'
+          class='dialog-vote-button'
+          data-votetype='down'
+          data-theme='d')
+            img(src='/public/images/thumbdn_32.png')
 
       form(id='reply-form', method='POST', action='')
-        div(class='ui-grid-a')
-          div(class='ui-block-a')
-            a(href='#'
-            type='button'
-            class='dialog-vote-button'
-            data-votetype='up'
-            data-theme='c')
-              img(src='/public/images/thumbup_32.png')
-          div(class='ui-block-b')
-            a(href='#'
-            type='button'
-            class='dialog-vote-button'
-            data-votetype='down'
-            data-theme='d')
-              img(src='/public/images/thumbdn_32.png')
         input(type='hidden', name='feedbackid', id='dialog-feedbackid')
         input(type='hidden', name='votetype', id='dialog-votetype')
         textarea(cols='40', rows='10', name='message', id='reply-message', value='')

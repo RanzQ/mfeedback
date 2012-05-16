@@ -455,7 +455,8 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
     , feedbackBody = {}
     , feedbackid = feedback.feedbackid
     , isNew = (feedbackid === undefined)
-    , isVote = (feedback.body === undefined);
+    , isVote = (feedback.body === undefined)
+    , isReply = !isVote;
 
   if (isVote) {
     vote['votes.' + feedback.votetype] = 1;
@@ -468,10 +469,10 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
 
   // Case: course feedback
   if (type === 'course') {
-    self.courses.findOne( {'id': courseId}, function(err, doc) {
-        if (err || !doc) {callback(err); return;}
-        doc.feedbacks.push(feedbackBody);
-        doc.save(function(err, doc) {
+    self.courses.findOne( {'id': courseId}, function(err, course) {
+        if (err || !course) {callback(err); return;}
+        course.feedbacks.push(feedbackBody);
+        course.save(function(err, doc) {
           callback(err, doc);
         });        
       }
@@ -481,56 +482,60 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
 
   // console.log('db_provider 480:', update_query);
 
-    self.courses.findOne({'id': courseId}, {'_id': 1}, function(err, doc) {
-      // Case: add a vote
-      if (feedbackid === undefined && isVote) {
-        self[type].findAndModify(
-          {'_parent': doc._id, 'date': date}, [],
-          update_query, {'new': true},
-          function(err, doc) {
-            if (err || !doc) {callback(err); return;}
-            callback(err, doc);
-          }
-        );
-      } else {
-        self[type].findOne({'_parent': doc._id, 'date': date}, function(err, doc) {
+  self.courses.findOne({'id': courseId}, {'_id': 1}, function(err, course) {
+    // Case: add a vote
+    if (feedbackid === undefined && isVote) {
+      self[type].findAndModify(
+        {'_parent': course._id, 'date': date}, [],
+        update_query, {'new': true},
+        function(err, doc) {
           if (err || !doc) {callback(err); return;}
+          callback(err, doc);
+        }
+      );
+      return;
+    }
 
-          if (isNew) {
-            // Case: add new feedback
-            doc.feedbacks.push(feedbackBody);
-          } else {
-            var fb = doc.feedbacks.id(feedbackid);
-            // console.log('db_provider 502:', fb);
-            if (!isVote) {
-              // Case: add reply to feedback
-              fb.replies.push(feedbackBody);
-              // console.log('db_provider 506:', fb);
-            } else {
-              // Case: add vote for feedback
-              if(!fb.votes) fb.votes = {};
-              if (feedback.votetype === 'down') {
-                if(!fb.votes.down) {
-                  fb.votes.down = 1;
-                } else {
-                  fb.votes.down++;
-                }
-              } else {
-                if(!fb.votes.up) {
-                  fb.votes.up = 1;
-                } else {
-                  fb.votes.up++;
-                }
-              }
-              console.log('db_provider 523:', fb);
-            }
+    self[type].findOne({'_parent': course._id, 'date': date}, function(err, doc) {
+      if (err || !doc) {callback(err); return;}
+
+      var fb = null;
+      if (isNew) {
+        // Case: add new feedback
+        doc.feedbacks.push(feedbackBody);
+      } else if (isReply) {
+        // Case: add reply to feedback
+        fb = doc.feedbacks.id(feedbackid);
+        fb.replies.push(feedbackBody);
+      } else {
+        // Case: add vote for feedback
+        fb = doc.feedbacks.id(feedbackid);
+        var votetype = feedback.votetype;
+        try {
+          var v = fb.votes[votetype];
+          fb.votes[votetype] = v ? v + 1 : 1;
+        } catch(e) {
+          fb.votes = {};
+          fb.votes[votetype] = 1;
+        }
+        // Override the returned document because Mongoose makes life hard
+        var d = {
+          votes: {
+            'up': parseInt(fb.votes.up, 10),
+            'down': parseInt(fb.votes.down, 10)
           }
-          doc.save(function(err, doc) {
-            callback(err, doc);
-          });
+        };
+        doc.save(function(err, doc) {
+          callback(err, d);
         });
-      } 
-
+        // Return early due the the callback firing
+        return;
+      }
+      
+      doc.save(function(err, doc) {
+        //console.log(doc);
+        callback(err, doc);
+      });
     });
-
+  });
 };

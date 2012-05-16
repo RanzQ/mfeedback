@@ -23,7 +23,7 @@
 
     "loggers": {
       "scraper": {
-        "level": "INFO",
+        "level": "WARNING",
         "handlers": ["console"],
         "propagate": "True"
       },

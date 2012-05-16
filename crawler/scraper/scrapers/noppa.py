@@ -456,8 +456,8 @@ class Scraper(object):
         if self._kwargs.pop('departments') == True:
             tasks.append(self._scrape_departments)
         if (self._kwargs.pop('courses') == True
-                or 'id' in self._kwargs
-                or 'title' in self._kwargs):
+                or self._kwargs['id'] is not None
+                or self._kwargs['title'] is not None):
             tasks.append(self._scrape_courses)
 
         log.debug('Keyword arguments given to scrape were {}'

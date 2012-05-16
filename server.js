@@ -77,7 +77,7 @@ server._configure = function() {
     app.use(express.session({secret: "O09zC8#KgUZFyBad", store: sessionStore, key: "mfb"}));
     app.use(express.methodOverride());
     //app.use(app.router); // Disabled for mongooseAuth
-    app.use('/public', express.static(__dirname + '/public'));
+    app.use('/public', express['static'](__dirname + '/public'));
     app.use(mongooseAuth.middleware());
 
     app.dynamicHelpers({
@@ -122,36 +122,44 @@ server._setupRoutes = function() {
 
     function addFeedback(req, res, eventType, date) {
       var courseId = req.params.id.toLowerCase()
-        , feedback = (req.body.message === '') ? undefined : req.body.message
-        , votetype = (req.body.votetype === '') ? undefined : req.body.votetype
-        , feedbackId = (req.body.feedbackid === '') ? undefined : req.body.feedbackid
+        , feedback = req.body.message
+        , votetype = req.body.votetype
+        , feedbackId = req.body.feedbackid
         , fb = {'body': feedback, 'votetype': votetype, 'feedbackid': feedbackId}
-        , isVote = (feedback === undefined)
+        , isVote = (votetype !== undefined)
         , isReply = (feedbackId !== undefined && !isVote)
-        , voteId = courseId + eventType.substring(0,1) + date;
+        , voteId = null;
 
-      // If this is a feedback vote, set a different voteid
-      // if (feedbackId) voteId = feedbackId;
+      if (feedbackId) {
+        voteId = feedbackId;
+      } else {
+        voteId = courseId + eventType.substring(0,1) + date;
+      }
+
       
       // If this is a vote, check that the session is valid
       // If the session is not valid, return
-      if (isVote && !feedbackId && !checkSession(req, res, voteId)) {
-          return;
-      }
+      //if (isVote && !checkSession(req, res, voteId)) {
+      //    return;
+      //}
 
       db.addFeedback(courseId, eventType, date, fb, function(error, result) {
         if (error || !req.xhr) { res.send(res_404, 404); return; }
           // If feedback is undefined, this is either an upvote or downvote
           // so we should respond with json
 
-          if (isVote && !feedbackId) {
+          if (isVote) {
             // Save the voteId to session so user can't vote again during
             // this session
             var session = req.session;
             session.votesCast[voteId] = true;
             session.save();
             res.contentType('json');
-            res.send({'msg': 'Thank you for your vote!', 'votes': result.votes});
+            res.send({
+              'msg': 'Thank you for your vote!', 
+              'votes': result.votes
+              //'feedbackId': feedbackId
+            });
           } else if (eventType === 'course') {
             res.partial('partials/thank_you_page', {
               title: 'Thank you!',
