@@ -198,13 +198,13 @@ app.close = function() {
  * 
  *      @param {Object} course 
  */
-app.addCourse = function(course, callback) {
-  var newCourse = new this.courses(course);
-  newCourse.save(function (err) {
-    if (err) {callback(err); return;}
-    callback(null);
-  });
-};
+// app.addCourse = function(course, callback) {
+//   var newCourse = new this.courses(course);
+//   newCourse.save(function (err) {
+//     if (err) {callback(err); return;}
+//     callback(null);
+//   });
+// };
 
 app.getCoursesByDepartment = function(depId,  activeOnly, callback) {
   var query = {'department': depId};
@@ -299,41 +299,57 @@ app.getPage = function(options, callback) {
     });
 };
 
-app.getLecture = function(options, callback) {
-  var date = options.date
-    , courseId = options.courseId
-    , self = this;
-  this.courses.findOne({'id': courseId}, function(err, doc){
-    if (err || !doc) {callback(err); return;}
-      self.lectures.findOne({'_parent': doc._id, 'date': date})
-      .run(function(err, doc) {
-        if (err || !doc) {callback(err); return;}
-        callback(null, doc);
-      });
-  });
-};
+// app.getLecture = function(options, callback) {
+//   var date = options.date
+//     , courseId = options.courseId
+//     , self = this;
+//   this.courses.findOne({'id': courseId}, function(err, doc){
+//     if (err || !doc) {callback(err); return;}
+//       self.lectures.findOne({'_parent': doc._id, 'date': date})
+//       .run(function(err, doc) {
+//         if (err || !doc) {callback(err); return;}
+//         callback(null, doc);
+//       });
+//   });
+// };
 
-app.getExam = function(options, callback) {
-  var date = options.date
-    , courseId = options.courseId
-    , self = this;
-  this.courses.findOne({'id': courseId}, function(err, doc){
-    if (err || !doc) {callback(err); return;}
-      self.exams.findOne({'_parent': doc._id, 'date': date})
-      .run(function(err, doc) {
-        if (err || !doc) {callback(err); return;}
-        callback(null, doc);
-      });
-  });
-};
+// app.getExam = function(options, callback) {
+//   var date = options.date
+//     , courseId = options.courseId
+//     , self = this;
+//   this.courses.findOne({'id': courseId}, function(err, doc){
+//     if (err || !doc) {callback(err); return;}
+//       self.exams.findOne({'_parent': doc._id, 'date': date})
+//       .run(function(err, doc) {
+//         if (err || !doc) {callback(err); return;}
+//         callback(null, doc);
+//       });
+//   });
+// };
 
-app.getAssignment = function(options, callback) {
+// app.getAssignment = function(options, callback) {
+//   var date = options.date
+//     , courseId = options.courseId
+//     , self = this;
+//   this.courses.findOne({'id': courseId}, function(err, doc){
+//     if (err || !doc) {callback(err); return;}
+//       self.assignments.findOne({'_parent': doc._id, 'deadline': date})
+//       .run(function(err, doc) {
+//         if (err || !doc) {callback(err); return;}
+//         callback(null, doc);
+//       });
+//   });
+// };
+
+app.getCourseEvent = function(options, callback) {
   var date = options.date
     , courseId = options.courseId
+    , type = options.type + 's'
     , self = this;
+
   this.courses.findOne({'id': courseId}, function(err, doc){
     if (err || !doc) {callback(err); return;}
-      self.assignments.findOne({'_parent': doc._id, 'deadline': date})
+      self[type].findOne({'_parent': doc._id, 'date': date})
       .run(function(err, doc) {
         if (err || !doc) {callback(err); return;}
         callback(null, doc);
@@ -371,15 +387,15 @@ app.searchCourses = function(term, callback) {
  *      @param {String} courseId - id of the course
  *      @param {Object} lecture - lecture to add
  */
-app.addLecture = function(courseId, lecture, callback) {
-  this.courses.findOne({'id': courseId}, function(err, course) {
-    if (err) {callback(err); return;}
-    course.lectures.push(lecture, {upsert: true}, function(err) {
-      if (err) {callback(err); return;}
-      callback(null);  
-    });
-  });
-};
+// app.addLecture = function(courseId, lecture, callback) {
+//   this.courses.findOne({'id': courseId}, function(err, course) {
+//     if (err) {callback(err); return;}
+//     course.lectures.push(lecture, {upsert: true}, function(err) {
+//       if (err) {callback(err); return;}
+//       callback(null);  
+//     });
+//   });
+// };
 
 app.getOrganizations = function(callback) {
   this.organizations.find({}, function(err,docs) {
@@ -415,14 +431,14 @@ app.getDepartment = function(id, callback) {
  *      @param {String} courseId - id of the course
  *      @param {Object} assignment - assignment to add
  */
-app.addAssignment = function(courseId, assignment, callback) {
-  this.courses.update({'id': courseId}, {'$push': {
-    'assignments': assignment
-  }}, { upsert: true }, function(err) {
-    if (err) {callback(err); return;}
-    callback(null);
-  });
-};
+// app.addAssignment = function(courseId, assignment, callback) {
+//   this.courses.update({'id': courseId}, {'$push': {
+//     'assignments': assignment
+//   }}, { upsert: true }, function(err) {
+//     if (err) {callback(err); return;}
+//     callback(null);
+//   });
+// };
 
 /**
  * Add an exam
@@ -430,14 +446,14 @@ app.addAssignment = function(courseId, assignment, callback) {
  *      @param {String} courseId - id of the course
  *      @param {Object} exam - exam to add
  */
-app.addExam = function(courseId, exam, callback) {
-  this.courses.update({'id': courseId}, {'$push': {
-    'exams': exam
-  }}, { upsert: true }, function(err) {
-    if (err) {callback(err); return;}
-    callback(null);
-  });
-};
+// app.addExam = function(courseId, exam, callback) {
+//   this.courses.update({'id': courseId}, {'$push': {
+//     'exams': exam
+//   }}, { upsert: true }, function(err) {
+//     if (err) {callback(err); return;}
+//     callback(null);
+//   });
+// };
 
 /**
  * Add feedback
@@ -449,6 +465,7 @@ app.addExam = function(courseId, exam, callback) {
  */
 app.addFeedback = function(courseId, type, date, feedback, callback) {
   var self = this
+    , collection = type + 's'
     , update_query = {}
     , vote = {}
     , timestamp = new Date()
@@ -478,14 +495,14 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
       }
     );
     return;
-  }
+  } 
 
   // console.log('db_provider 480:', update_query);
 
   self.courses.findOne({'id': courseId}, {'_id': 1}, function(err, course) {
     // Case: add a vote
     if (feedbackid === undefined && isVote) {
-      self[type].findAndModify(
+      self[collection].findAndModify(
         {'_parent': course._id, 'date': date}, [],
         update_query, {'new': true},
         function(err, doc) {
@@ -496,7 +513,7 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
       return;
     }
 
-    self[type].findOne({'_parent': course._id, 'date': date}, function(err, doc) {
+    self[collection].findOne({'_parent': course._id, 'date': date}, function(err, doc) {
       if (err || !doc) {callback(err); return;}
 
       var fb = null;

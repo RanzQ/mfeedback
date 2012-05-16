@@ -167,11 +167,17 @@ server._setupRoutes = function() {
             });
           } else {
             var context = {
-              title: courseId.toUpperCase() + ' - Lecture ' + dateFormat(result.date, 'dd mmm yy'),
-              lecture: result,
+              preTitle: id.toUpperCase() + ' - ' + type.toUpperCase().charAt(0) + type.substring(1) + ' ' + dateFormat(event.date, 'dd mmm yy'),
+              title: event.topic? event.topic : (event.title? event.title : ''),
+              event: event,
               dateFormat: dateFormat
             };
-            res.partial('partials/lecture_feedback_page', context);
+            if (req.xhr) {
+              res.partial('partials/event_feedback_page', context);
+            } else {
+              console.log(context);
+              res.render('event_feedback', context);
+            }
           }
       });
     }
@@ -379,7 +385,7 @@ server._setupRoutes = function() {
      */
 
     app.post('/course/:id/feedback', function(req, res) {
-      addFeedback(req, res, 'courses', date);
+      addFeedback(req, res, 'course', date);
     });
 
     /*
@@ -404,146 +410,170 @@ server._setupRoutes = function() {
     });
 
     /*
-     * GET lecture feedback page.
+     * GET event feedback page.
      */
 
-    app.get('/course/:id/lecture/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
+    app.get('/course/:id/:type/' +
+      ':year([0-9]{4}):month([0-9]{2}):day([0-9]{2})' +
+      ':hour([0-9]{2})?:minute([0-9]{2})?', function(req, res) {
+
       var id = req.params.id.toLowerCase()
+        , type = req.params.type.toLowerCase()
         , y = req.params.year 
         , m = req.params.month
         , d = req.params.day
+        , h = req.params.hour
+        , min = req.params.minute
         , date = new Date();
 
-      date.setFullYear(y,m-1,d);
-      date.setHours(0, 0, 0, 0);
+      if (type !== 'lecture' && type !== 'exam' && type !== 'assignment') {
+        res.send(res_404, 404); return;
+      }
 
-      db.getLecture({'courseId': id, 'date':date}, function(error, lecture) {
-        if (error || !lecture) { res.send(res_404, 404); return; }
+      date.setFullYear(y,m-1,d);
+      date.setHours( h? h : 0, min? min : 0, 0, 0);
+
+      db.getCourseEvent({'courseId': id, 'type': type, 'date':date}, function(error, event) {
+        if (error || !event) { res.send(res_404, 404); return; }
+        console.log(event);
         var context = {
-          title: id.toUpperCase() + ' - Lecture ' + dateFormat(lecture.date, 'dd mmm yy'),
-          lecture: lecture,
+          preTitle: id.toUpperCase() + ' - ' + type.toUpperCase().charAt(0) + type.substring(1) + ' ' + dateFormat(event.date, 'dd mmm yy'),
+          title: event.topic? event.topic : (event.title? event.title : ''),
+          event: event,
           dateFormat: dateFormat
         };
         if (req.xhr) {
-          res.partial('partials/lecture_feedback_page', context);
+          res.partial('partials/event_feedback_page', context);
         } else {
           console.log(context);
-          res.render('lecture_feedback', context);
+          res.render('event_feedback', context);
         }
       });
     });
 
     /*
-     * POST lecture feedback, vote, feedback reply or feedback vote.
+     * POST event feedback, vote, feedback reply or feedback vote.
      */
 
-    app.post('/course/:id/lecture/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
-      var y = req.params.year 
+    app.post('/course/:id/:type/' +
+      ':year([0-9]{4}):month([0-9]{2}):day([0-9]{2})' +
+      ':hour([0-9]{2})?:minute([0-9]{2})?', function(req, res) {
+
+      var id = req.params.id.toLowerCase()
+        , type = req.params.type.toLowerCase()
+        , y = req.params.year 
         , m = req.params.month
         , d = req.params.day
+        , h = req.params.hour
+        , min = req.params.minute
         , date = new Date();
 
+      if (type !== 'lecture' && type !== 'exam' && type !== 'assignment') {
+        res.send(res_404, 404); return;
+      }
+
       date.setFullYear(y,m-1,d);
-      date.setHours(0, 0, 0, 0);
-      console.log(req.body);
-      addFeedback(req, res, 'lectures', date);
+      date.setHours( h? h : 0, min? min : 0, 0, 0);
+
+      addFeedback(req, res, type, date);
+
     });
 
     /*
      * GET assignment feedback page.
      */
 
-    app.get('/course/:id/assignment/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2}):hour([0-9]{2}):minute([0-9]{2})', function(req, res) {
-      var id = req.params.id.toLowerCase()
-        , y = req.params.year 
-        , m = req.params.month
-        , d = req.params.day
-        , h = req.params.hour
-        , min = req.params.minute
-        , date = new Date();
+    // app.get('/course/:id/assignment/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2}):hour([0-9]{2}):minute([0-9]{2})', function(req, res) {
+    //   var id = req.params.id.toLowerCase()
+    //     , y = req.params.year 
+    //     , m = req.params.month
+    //     , d = req.params.day
+    //     , h = req.params.hour
+    //     , min = req.params.minute
+    //     , date = new Date();
 
-      date.setFullYear(y,m-1,d);
-      date.setHours(h, min, 0, 0);
+    //   date.setFullYear(y,m-1,d);
+    //   date.setHours(h, min, 0, 0);
 
-      db.getAssignment({'courseId': id, 'date': date}, function(error, assignment) {
-        if (error || !assignment) { res.send(res_404, 404); return; } 
+    //   db.getAssignment({'courseId': id, 'date': date}, function(error, assignment) {
+    //     if (error || !assignment) { res.send(res_404, 404); return; } 
 
-        var context = {
-          title: id.toUpperCase() + ' - ' + assignment.title,
-          assignment: assignment,
-          dateFormat: dateFormat
-        };
-        if (req.xhr) {
-          res.partial('partials/assignment_feedback_page', context);
-        } else {
-          res.render('assignment_feedback', context);
-        }
-      });
-    });
+    //     var context = {
+    //       title: id.toUpperCase() + ' - ' + assignment.title,
+    //       assignment: assignment,
+    //       dateFormat: dateFormat
+    //     };
+    //     if (req.xhr) {
+    //       res.partial('partials/assignment_feedback_page', context);
+    //     } else {
+    //       res.render('assignment_feedback', context);
+    //     }
+    //   });
+    // });
 
     /*
      * POST assignment feedback.
      */
 
-    app.post('/course/:id/assignment/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2}):hour([0-9]{2}):minute([0-9]{2})', function(req, res) {
-      var y = req.params.year 
-        , m = req.params.month
-        , d = req.params.day
-        , h = req.params.hour
-        , min = req.params.minute
-        , date = new Date();
+    // app.post('/course/:id/assignment/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2}):hour([0-9]{2}):minute([0-9]{2})', function(req, res) {
+    //   var y = req.params.year 
+    //     , m = req.params.month
+    //     , d = req.params.day
+    //     , h = req.params.hour
+    //     , min = req.params.minute
+    //     , date = new Date();
 
-      date.setFullYear(y,m-1,d);
-      date.setHours(h, min, 0, 0);
+    //   date.setFullYear(y,m-1,d);
+    //   date.setHours(h, min, 0, 0);
 
-      addFeedback(req, res, 'assignments', date);
-    });
+    //   addFeedback(req, res, 'assignments', date);
+    // });
 
     /*
      * GET exam feedback page.
      */
 
-    app.get('/course/:id/exam/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
-      var id = req.params.id.toLowerCase()
-        , y = req.params.year 
-        , m = req.params.month
-        , d = req.params.day
-        , date = new Date();
+    // app.get('/course/:id/exam/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
+    //   var id = req.params.id.toLowerCase()
+    //     , y = req.params.year 
+    //     , m = req.params.month
+    //     , d = req.params.day
+    //     , date = new Date();
 
-      date.setFullYear(y,m-1,d);
-      date.setHours(0, 0, 0, 0);
+    //   date.setFullYear(y,m-1,d);
+    //   date.setHours(0, 0, 0, 0);
 
-      db.getExam({'courseId': id, 'date': date}, function(error, exam) {
-        if (error || !exam) { res.send(res_404, 404); return; } 
+    //   db.getExam({'courseId': id, 'date': date}, function(error, exam) {
+    //     if (error || !exam) { res.send(res_404, 404); return; } 
 
-        var context = {
-          title: id.toUpperCase() + ' - Exam ' + dateFormat(exam.date, 'dd mmm yy'),
-          exam: exam,
-          dateFormat: dateFormat
-        };
-        if (req.xhr) {
-          res.partial('partials/exam_feedback_page', context);
-        } else {
-          res.render('exam_feedback', context);
-        }
-      });
-    });
+    //     var context = {
+    //       title: id.toUpperCase() + ' - Exam ' + dateFormat(exam.date, 'dd mmm yy'),
+    //       exam: exam,
+    //       dateFormat: dateFormat
+    //     };
+    //     if (req.xhr) {
+    //       res.partial('partials/exam_feedback_page', context);
+    //     } else {
+    //       res.render('exam_feedback', context);
+    //     }
+    //   });
+    // });
 
     /*
      * POST exam feedback.
      */
 
-    app.post('/course/:id/exam/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
-      var y = req.params.year 
-        , m = req.params.month
-        , d = req.params.day
-        , date = new Date();
+    // app.post('/course/:id/exam/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
+    //   var y = req.params.year 
+    //     , m = req.params.month
+    //     , d = req.params.day
+    //     , date = new Date();
 
-      date.setFullYear(y,m-1,d);
-      date.setHours(0, 0, 0, 0);
+    //   date.setFullYear(y,m-1,d);
+    //   date.setHours(0, 0, 0, 0);
 
-      addFeedback(req, res, 'exams', date);
-    });
+    //   addFeedback(req, res, 'exams', date);
+    // });
 
 
   /*

@@ -5,8 +5,8 @@ div(data-role='page', id='feedback-page', data-theme='a')
 
   div(data-role='content')
 
-    span #{title}:
-    h3 #{lecture.topic}
+    span= preTitle
+    h3= title
     
     div(class='messages')
 
@@ -20,7 +20,7 @@ div(data-role='page', id='feedback-page', data-theme='a')
         data-votetype='up'
         data-theme='c')
           span(class='upvotes')
-            = lecture.votes.up ? '+' + lecture.votes.up : ''
+            = element.votes.up ? '+' + element.votes.up : ''
           img(src='/public/images/thumbup_32.png')
       div(class='ui-block-b')
         a(href='#'
@@ -31,7 +31,7 @@ div(data-role='page', id='feedback-page', data-theme='a')
         data-votetype='down'
         data-theme='d')
           span(class='downvotes')
-            = lecture.votes.down ? '-' + lecture.votes.down : ''
+            = element.votes.down ? '-' + element.votes.down : ''
           img(src='/public/images/thumbdn_32.png')
 
     ul(data-role='listview', data-inset='true')
@@ -45,7 +45,7 @@ div(data-role='page', id='feedback-page', data-theme='a')
           value='Submit')
 
     ul(class='feedback-thread', data-role='listview', data-inset='true')
-      - var feedbacks = lecture.feedbacks.reverse()
+      - var feedbacks = element.feedbacks.reverse()
       each feedback in feedbacks
         li(class='feedback ui-btn-up-a', data-icon='false', data-feedback-id='#{feedback._id}')
           div(class='feedback-header')
