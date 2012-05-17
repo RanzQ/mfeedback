@@ -1,6 +1,6 @@
 var mongoose = require('mongoose')
   , mongooseAuth = require('mongoose-auth')
-  , ObjectId = require('mongoose').Types.ObjectId; 
+  , ObjectId = require('mongoose').Types.ObjectId;
 
 
 exports = module.exports = DatabaseProvider;
@@ -195,8 +195,8 @@ app.close = function() {
 
 /**
  * Add a new course
- * 
- *      @param {Object} course 
+ *
+ *      @param {Object} course
  */
 // app.addCourse = function(course, callback) {
 //   var newCourse = new this.courses(course);
@@ -214,7 +214,7 @@ app.getCoursesByDepartment = function(depId,  activeOnly, callback) {
   console.log(query);
   this.courses.find(query, function (err, docs) {
     if (err) {callback(err); return;}
-    callback(null, docs);  
+    callback(null, docs);
   });
 };
 
@@ -266,7 +266,6 @@ function populateEvents(self, course, filters, callback) {
 }
 
 app.getPage = function(options, callback) {
-  console.log(options);
   var self = this
     , collection = options.collection
     , courseId = options.courseId
@@ -373,17 +372,18 @@ app.searchCourses = function(term, callback) {
   } else {
     callback('Empty query!', []);
     return;
-  } 
+  }
   this.courses.find(full_query,
     function (err, docs) {
     if (err) {callback(err); return;}
-    callback(null, docs);  
+    callback(null, docs);
   });
+
 };
 
 /**
  * Add a lecture
- * 
+ *
  *      @param {String} courseId - id of the course
  *      @param {Object} lecture - lecture to add
  */
@@ -392,7 +392,7 @@ app.searchCourses = function(term, callback) {
 //     if (err) {callback(err); return;}
 //     course.lectures.push(lecture, {upsert: true}, function(err) {
 //       if (err) {callback(err); return;}
-//       callback(null);  
+//       callback(null);
 //     });
 //   });
 // };
@@ -400,34 +400,34 @@ app.searchCourses = function(term, callback) {
 app.getOrganizations = function(callback) {
   this.organizations.find({}, function(err,docs) {
     if (err) {callback(err); return;}
-    callback(null, docs);     
+    callback(null, docs);
   });
 };
 
 app.getOrganization = function(id, callback) {
   this.organizations.findOne({'id': id}, function(err,doc) {
     if (err) {callback(err); return;}
-    callback(null, doc);     
+    callback(null, doc);
   });
 };
 
 app.getDepartmentsByOrganization = function(orgId, callback) {
   this.departments.find({'organization': orgId}, function(err,doc) {
     if (err) {callback(err); return;}
-    callback(null, doc);     
+    callback(null, doc);
   });
 };
 
 app.getDepartment = function(id, callback) {
   this.departments.findOne({'id': id}, function(err,doc) {
     if (err) {callback(err); return;}
-    callback(null, doc);     
+    callback(null, doc);
   });
 };
 
 /**
  * Add an assignment
- * 
+ *
  *      @param {String} courseId - id of the course
  *      @param {Object} assignment - assignment to add
  */
@@ -442,7 +442,7 @@ app.getDepartment = function(id, callback) {
 
 /**
  * Add an exam
- * 
+ *
  *      @param {String} courseId - id of the course
  *      @param {Object} exam - exam to add
  */
@@ -457,7 +457,7 @@ app.getDepartment = function(id, callback) {
 
 /**
  * Add feedback
- * 
+ *
  *      @param {String} courseId - the id of the course
  *      @param {String} type - 'lecture', 'assignment' or 'exam'
  *      @param {String} date - date or deadline
@@ -478,8 +478,16 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
   if (isVote) {
     vote['votes.' + feedback.votetype] = 1;
     update_query = {'$inc': vote};
-  } else {
+  } else if (type === 'course') {
     feedbackBody = {'body': feedback.body, 'date': timestamp};
+  } else {
+    feedbackBody = {
+      'body': feedback.body,
+      'date': timestamp,
+      'book': book,
+      'exercises': exercises,
+      'overall': overall
+    };
   }
 
   // console.log('db_provider 466:', feedback);
@@ -491,11 +499,11 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
         course.feedbacks.push(feedbackBody);
         course.save(function(err, doc) {
           callback(err, doc);
-        });        
+        });
       }
     );
     return;
-  } 
+  }
 
   // console.log('db_provider 480:', update_query);
 
@@ -548,7 +556,7 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
         // Return early due the the callback firing
         return;
       }
-      
+
       doc.save(function(err, doc) {
         //console.log(doc);
         callback(err, doc);

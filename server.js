@@ -124,9 +124,20 @@ server._setupRoutes = function() {
       var courseId = req.params.id.toLowerCase()
         , feedback = req.body.message
         , votetype = req.body.votetype
+        , book = req.body.book
+        , exercises = req.body.exercises
+        , exam = req.body.exam
+        , overall = req.body.overall
         , feedbackId = req.body.feedbackid
-        , fb = {'body': feedback, 'votetype': votetype, 'feedbackid': feedbackId}
-        , isVote = (votetype !== undefined)
+        , fb = {
+          'body': feedback,
+          'votetype': votetype,
+          'feedbackid': feedbackId,
+          'book': book,
+          'exercises': exercises,
+          'overall': overall
+        }
+        , isVote = (feedback === undefined)
         , isReply = (feedbackId !== undefined && !isVote)
         , voteId = null;
 
@@ -139,14 +150,16 @@ server._setupRoutes = function() {
       
       // If this is a vote, check that the session is valid
       // If the session is not valid, return
-      //if (isVote && !checkSession(req, res, voteId)) {
-      //    return;
-      //}
+      if (isVote && !checkSession(req, res, voteId)) {
+         return;
+      }
 
       db.addFeedback(courseId, eventType, date, fb, function(error, result) {
         if (error || !req.xhr) { res.send(res_404, 404); return; }
           // If feedback is undefined, this is either an upvote or downvote
           // so we should respond with json
+
+          
 
           if (isVote) {
             // Save the voteId to session so user can't vote again during
@@ -160,24 +173,24 @@ server._setupRoutes = function() {
               'votes': result.votes
               //'feedbackId': feedbackId
             });
-          } else if (courseEventType === 'course') {
+          } else if (eventType === 'course') {
             res.partial('partials/thank_you_page', {
               title: 'Thank you!',
               back_url: '/course/' + courseId
             });
           } else {
+            console.log(result);
             var context = {
-              preTitle: id.toUpperCase() + ' - ' + type.toUpperCase().charAt(0) + type.substring(1) + ' ' + dateFormat(courseEvent.date, 'dd mmm yy'),
-              title: courseEvent.topic? courseEvent.topic : (courseEvent.title? courseEvent.title : ''),
-              courseEvent: courseEvent,
+              preTitle: courseId.toUpperCase() + ' - ' +
+                        eventType.toUpperCase().charAt(0) +
+                        eventType.substring(1) + ' ' +
+                        dateFormat(result.date, 'dd mmm yy'),
+              title: result.topic? result.topic : (result.title? result.title : ''),
+              courseEvent: result,
               dateFormat: dateFormat
             };
-            if (req.xhr) {
-              res.partial('partials/event_feedback_page', context);
-            } else {
-              console.log(context);
-              res.render('event_feedback', context);
-            }
+            console.log('Got here');
+            res.partial('partials/event_feedback_page', context);
           }
       });
     }
@@ -385,7 +398,7 @@ server._setupRoutes = function() {
      */
 
     app.post('/course/:id/feedback', function(req, res) {
-      addFeedback(req, res, 'course', date);
+      addFeedback(req, res, 'course');
     });
 
     /*
@@ -437,7 +450,10 @@ server._setupRoutes = function() {
         if (error || !courseEvent) { res.send(res_404, 404); return; }
         console.log(courseEvent);
         var context = {
-          preTitle: id.toUpperCase() + ' - ' + type.toUpperCase().charAt(0) + type.substring(1) + ' ' + dateFormat(courseEvent.date, 'dd mmm yy'),
+          preTitle: id.toUpperCase() + ' - ' +
+                    type.toUpperCase().charAt(0) +
+                    type.substring(1) + ' ' +
+                    dateFormat(courseEvent.date, 'dd mmm yy'),
           title: courseEvent.topic? courseEvent.topic : (courseEvent.title? courseEvent.title : ''),
           courseEvent: courseEvent,
           dateFormat: dateFormat

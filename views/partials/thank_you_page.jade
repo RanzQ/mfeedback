@@ -1,17 +1,28 @@
 // Start of course page
-div(data-role='page', id='course-page', data-theme='a', data-add-back-btn="false")
+div(data-role='page', id='course-page', data-theme='a', data-add-back-btn='false')
 
-  include header
+  div(data-role='header')
+    a(href='./'
+      data-role='button'
+      data-icon='arrow-l'
+      data-direction='reverse') Back
+    h1
+      span(class='aalto-logo')
+      span= title
+    a(href='/'
+      class='ui-btn-right'
+      data-role='button'
+      data-icon='home'
+      data-iconpos='notext'
+      data-direction='reverse') Home
 
   div(data-role='content')
 
     h1 Feedback received, thank you!
-    a(
-      href="#{back_url}"
+    a(href='./'
       data-role='button'
-      data-icon='home'
-      data-iconpos='notext'
-      data-direction='reverse') Go back
+      data-icon='arrow-l'
+      data-direction='reverse') Back to course page
 
 
   // /content
