@@ -56,6 +56,19 @@ function DatabaseProvider(dbName) {
         'replies': [ReplySchema]
       })
 
+    , CourseFeedbackSchema = new Schema({
+        'date' : {
+          'type': Date,
+          'index': true,
+          'default': Date.now
+        },
+        'body' : String,
+        'book': Number,
+        'exam': Number,        
+        'exercises': Number,
+        'overall': Number
+      })
+
     , LectureSchema = new Schema({
         'course': {
           'type': String,
@@ -133,7 +146,7 @@ function DatabaseProvider(dbName) {
           'index': true
         },
         'isActive': Boolean,
-        'feedbacks': [FeedbackSchema],
+        'feedbacks': [CourseFeedbackSchema],
         'lectures': [LectureSchema],
         'exams': [ExamSchema],
         'assignments': [AssignmentSchema]
@@ -479,15 +492,16 @@ app.addFeedback = function(courseId, type, date, feedback, callback) {
     vote['votes.' + feedback.votetype] = 1;
     update_query = {'$inc': vote};
   } else if (type === 'course') {
-    feedbackBody = {'body': feedback.body, 'date': timestamp};
-  } else {
     feedbackBody = {
       'body': feedback.body,
       'date': timestamp,
-      'book': book,
-      'exercises': exercises,
-      'overall': overall
+      'book': feedback.book,
+      'exercises': feedback.exercises,
+      'exam': feedback.exam,
+      'overall': feedback.overall
     };
+  } else {
+    feedbackBody = {'body': feedback.body, 'date': timestamp};
   }
 
   // console.log('db_provider 466:', feedback);

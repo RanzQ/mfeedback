@@ -62,9 +62,9 @@ div(data-role='page', id='course-page', data-theme='a')
           data-event-type='exam'
           data-page='1', data-ajax='false') Load more exams
 
-
-    ul(data-role='listview', data-inset='true')
-      li
-        a(href='#{base_url}/show_feedback') Show all feedback
+    if course.feedbacks && course.feedbacks.length > 0
+      ul(data-role='listview', data-inset='true')
+        li
+          a(href='#{base_url}/show_feedback') Show course feedback
 
 // End of course page

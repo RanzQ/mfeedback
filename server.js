@@ -134,6 +134,7 @@ server._setupRoutes = function() {
           'votetype': votetype,
           'feedbackid': feedbackId,
           'book': book,
+          'exam': exam,
           'exercises': exercises,
           'overall': overall
         }
@@ -402,7 +403,7 @@ server._setupRoutes = function() {
     });
 
     /*
-     * GET show feedback page.
+     * GET show course feedback page.
      */
 
     app.get('/course/:id/show_feedback', function(req, res) {

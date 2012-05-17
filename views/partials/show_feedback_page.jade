@@ -1,70 +1,102 @@
 // Start of course page
-div(data-role='page', id='course-page', data-theme='a')
+div(data-role='page', id='show-course-feedback-page', data-theme='a')
 
   include header
 
   div(data-role='content')
 
-    ul(data-role='listview', data-filter='true', data-inset='true')
+    ul(data-role='listview', data-inset='true')
 
-      li(data-role='list-divider') Course feedback:
+      li(data-role='list-divider') Course feedback (ratings 1-4):
       - var hasFeedback = false;
       if course.feedbacks && course.feedbacks.length > 0
-        each feedback in course.feedbacks
-          li
-            h4= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+':'
-            p(class='feedback')= feedback.body
+        - var bookTotal = 0, exercisesTotal = 0, examTotal = 0, overallTotal = 0;
+        - var bookCount = 0, exercisesCount = 0, examCount = 0, overallCount = 0;
+        - var feedbacks = course.feedbacks.reverse()
+        each feedback in feedbacks
+          - if (feedback.book) { bookTotal += feedback.book; ++bookCount; }
+          - if (feedback.exercises) { exercisesTotal += feedback.exercises; ++exercisesCount; }
+          - if (feedback.exam) { examTotal += feedback.exam; ++examCount; }
+          - if (feedback.overall) { overallTotal += feedback.overall; ++overallCount; }
+
+        li
+          - if (bookCount !== 0)
+            div(class='score-wrapper')
+              span(class='score-label') Book:
+              span(class='score') #{ Math.round((bookTotal / bookCount)*10)/10}
+          - if (exercisesCount !== 0)
+            div(class='score-wrapper')
+              span(class='score-label') Exercises:
+              span(class='score') #{ Math.round((exercisesTotal / exercisesCount)*10)/10}
+          - if (examCount !== 0)
+            div(class='score-wrapper')
+              span(class='score-label') Exam:
+              span(class='score') #{ Math.round((examTotal / examCount)*10)/10}
+          - if (overallCount !== 0)
+            div(class='score-wrapper')
+              span(class='score-label') Overall:
+              span(class='score') #{ Math.round((overallTotal / overallCount)*10)/10}
+
+        each feedback in feedbacks
+          li(class='course-feedback', data-icon='false', data-feedback-id='#{feedback._id}')
+            div(class='feedback-header') #{dateFormat(feedback.date, 'mmmm dS yyyy, HH:MM')}: 
+            div(class='feedback-body')= feedback.body
+
       else
         li No course feedback.
 
-      li(data-role='list-divider') Lecture feedback:
 
-      each lecture in course.lectures
 
-        if lecture.feedbacks && lecture.feedbacks.length > 0
-          - hasFeedback = true
-          li
-            h4 #{dateFormat(lecture.date, 'dd mmm yy')}: #{lecture.topic}
-            each feedback in lecture.feedbacks
-              p(class='feedback')
-                strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+': '
-                span(class='feedback-body')= feedback.body
-      if !hasFeedback
-        li No lecture feedback.
-      else
-        - hasFeedback = false
 
-      li(data-role='list-divider') Assignment feedback:
 
-      each assignment in course.assignments
-        if assignment.feedbacks && assignment.feedbacks.length > 0
-          - hasFeedback = true
-          li
-            h4 #{assignment.title}
-            each feedback in assignment.feedbacks
-              p(class='feedback')
-                strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+': '
-                span(class='feedback-body')= feedback.body
-      if !hasFeedback
-        li No assignment feedback.
-      else
-        - hasFeedback = false
+      //- li(data-role='list-divider') Lecture feedback:
 
-      li(data-role='list-divider') Exam feedback:
+      //- each lecture in course.lectures
 
-      each exam in course.exams
-        if exam.feedbacks && exam.feedbacks.length > 0
-          - hasFeedback = true
-          li
-            h4 Exam #{dateFormat(exam.date, 'dd mmm yy')}
-            each feedback in exam.feedbacks
-              p(class='feedback')
-                strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+': '
-                span(class='feedback-body')= feedback.body
-      if !hasFeedback
-        li No exam feedback.
-      else
-        - hasFeedback = false
+      //-   if lecture.feedbacks && lecture.feedbacks.length > 0
+      //-     - hasFeedback = true
+      //-     li
+      //-       h4 #{dateFormat(lecture.date, 'dd mmm yy')}: #{lecture.topic}
+      //-       each feedback in lecture.feedbacks
+      //-         p(class='feedback')
+      //-           strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+': '
+      //-           span(class='feedback-body')= feedback.body
+      //- if !hasFeedback
+      //-   li No lecture feedback.
+      //- else
+      //-   - hasFeedback = false
+
+      //- li(data-role='list-divider') Assignment feedback:
+
+      //- each assignment in course.assignments
+      //-   if assignment.feedbacks && assignment.feedbacks.length > 0
+      //-     - hasFeedback = true
+      //-     li
+      //-       h4 #{assignment.title}
+      //-       each feedback in assignment.feedbacks
+      //-         p(class='feedback')
+      //-           strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+': '
+      //-           span(class='feedback-body')= feedback.body
+      //- if !hasFeedback
+      //-   li No assignment feedback.
+      //- else
+      //-   - hasFeedback = false
+
+      //- li(data-role='list-divider') Exam feedback:
+
+      //- each exam in course.exams
+      //-   if exam.feedbacks && exam.feedbacks.length > 0
+      //-     - hasFeedback = true
+      //-     li
+      //-       h4 Exam #{dateFormat(exam.date, 'dd mmm yy')}
+      //-       each feedback in exam.feedbacks
+      //-         p(class='feedback')
+      //-           strong(class='feedback-date')= dateFormat(feedback.date, 'dd mmm yy - HH:MM')+': '
+      //-           span(class='feedback-body')= feedback.body
+      //- if !hasFeedback
+      //-   li No exam feedback.
+      //- else
+      //-   - hasFeedback = false
 
 
 

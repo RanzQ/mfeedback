@@ -19,7 +19,7 @@ div(data-role='page', id='course-feedback-page', data-theme='a')
                 data-theme='a', data-track-theme='b')
       div(data-role='fieldcontain')
         fieldset(data-role='controlgroup')
-          label(for='slider-2') Excercises
+          label(for='slider-2') Exercises
           input(type='range', name='exercises', id='slider-2',
                 value='2', min='1', max='4', data-highlight='true',
                 data-theme='a', data-track-theme='b')
@@ -36,10 +36,9 @@ div(data-role='page', id='course-feedback-page', data-theme='a')
                 value='2', min='1', max='4', data-highlight='true',
                 data-theme='a', data-track-theme='b')
       div(data-role='fieldcontain')
-        fieldset(data-role='controlgroup')
-          label(for='comments') Comments
-          textarea(name='message', id='comments', cols='10', rows='15',
-                   value='', placeholder='Add comments here...')
+        label(for='comments') Comments
+        textarea(name='message', id='comments', cols='10', rows='15',
+                 value='', placeholder='Add comments here...')
       div(class='ui-grid-a')
         div(class='ui-block-a')
           input(type='submit', id='submit-course-feedback', name='submit-feedback', value='Submit')
