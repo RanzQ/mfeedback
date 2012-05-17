@@ -38,9 +38,10 @@ div(data-role='page', id='show-course-feedback-page', data-theme='a')
               span(class='score') #{ Math.round((overallTotal / overallCount)*10)/10}
 
         each feedback in feedbacks
-          li(class='course-feedback', data-icon='false', data-feedback-id='#{feedback._id}')
-            div(class='feedback-header') #{dateFormat(feedback.date, 'mmmm dS yyyy, HH:MM')}: 
-            div(class='feedback-body')= feedback.body
+          if feedback.body
+            li(class='course-feedback', data-icon='false', data-feedback-id='#{feedback._id}')
+              div(class='feedback-header') #{dateFormat(feedback.date, 'mmmm dS yyyy, HH:MM')}: 
+              div(class='feedback-body')= feedback.body
 
       else
         li No course feedback.
