@@ -11,6 +11,7 @@ from datetime import datetime
 month_to_int = dict((v, k) for k, v in enumerate(calendar.month_abbr))
 
 tl_dict = {
+    # Fin/Eng
     u'pvm': u'date',
     u'klo': u'time',
     u'päivä': u'day',
@@ -18,7 +19,14 @@ tl_dict = {
     u'tila': u'location',
     u'aihe': u'topic',
     u'dl': u'deadline',
-    u'otsikko': u'title'
+    u'otsikko': u'title',
+    # Swe/Eng
+    u'datum': u'date',
+    u'kl.': u'time',
+    u'dag': u'day',
+    u'vecka': u'week',
+    u'plats': u'location',
+    u'tema': u'topic',
 }
 
 TIME_ZONE = 'Europe/Helsinki'
@@ -32,7 +40,7 @@ session = requests.session(
     prefetch=True)
 
 
-def fin_to_eng(keyword):
+def tl_to_eng(keyword):
     keyword = keyword.lower()
     return tl_dict.get(keyword, keyword)
 

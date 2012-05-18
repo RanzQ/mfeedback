@@ -8,7 +8,7 @@ from pymongo import Connection
 from pymongo.objectid import ObjectId
 from ..util import (
     ensure_indexes,
-    fin_to_eng,
+    tl_to_eng,
     generate_ISO_date,
     safe_urlopen
     )
@@ -242,12 +242,10 @@ class Scraper(object):
             for i, td in enumerate(tr.find_all('td')):
                 header_text = header_texts[i].lower()
 
-                header_text = fin_to_eng(header_text)
+                header_text = tl_to_eng(header_text)
                 text = td.get_text(strip=True)
                 # If the header appears to be a date, convert it to ISO format
-                if header_text in [u'pvm', u'date']:
-                    # Ensure that the header text is 'date'
-                    header_text = u'date'
+                if header_text == u'date':
                     text = generate_ISO_date(text)
                     date = text
 
@@ -295,8 +293,8 @@ class Scraper(object):
             # Assign the extracted header texts to the correct data
             for i, td in enumerate(tr.find_all('td')):
                 header_text = header_texts[i].lower()
-                #if header_text in fin_to_eng:
-                header_text = fin_to_eng(header_text)
+                #if header_text in tl_to_eng:
+                header_text = tl_to_eng(header_text)
 
                 # If the header appears to be a date, convert it to ISO format
                 if header_text in [u'dl', u'deadline']:

@@ -139,13 +139,12 @@ server._setupRoutes = function() {
           'overall': overall
         }
         , isVote = (feedback === undefined)
-        , isReply = (feedbackId !== undefined && !isVote)
         , voteId = null;
 
       if (feedbackId) {
         voteId = feedbackId;
       } else {
-        voteId = courseId + eventType.substring(0,1) + date;
+        voteId = courseId + eventType.charAt(0) + date;
       }
 
       
@@ -166,32 +165,40 @@ server._setupRoutes = function() {
             // Save the voteId to session so user can't vote again during
             // this session
             var session = req.session;
-            session.votesCast[voteId] = true;
-            session.save();
+            try {
+              session.votesCast[voteId] = true;
+              session.save();
+            } catch (error) {
+              console.log('Failed to save the session variable!');
+              console.log('Error returned was ' + error);
+            }
             res.contentType('json');
             res.send({
               'msg': 'Thank you for your vote!', 
               'votes': result.votes
               //'feedbackId': feedbackId
             });
+            return;
           } else if (eventType === 'course') {
             res.partial('partials/thank_you_page', {
               title: 'Thank you!',
               back_url: '/course/' + courseId
             });
+            return;
           } else {
-            console.log(result);
             var context = {
-              preTitle: courseId.toUpperCase() + ' - ' +
-                        eventType.toUpperCase().charAt(0) +
-                        eventType.substring(1) + ' ' +
-                        dateFormat(result.date, 'dd mmm yy'),
-              title: result.topic? result.topic : (result.title? result.title : ''),
+              preTitle: [
+                  courseId.toUpperCase(), ' - ',
+                  eventType.charAt(0).toUpperCase(), eventType.slice(1), ' ',
+                  dateFormat(result.date, 'dd mmm yy')
+                ].join(''),
+              title: result.topic ? result.topic :
+                (result.title ? result.title : ''),
               courseEvent: result,
               dateFormat: dateFormat
             };
-            console.log('Got here');
             res.partial('partials/event_feedback_page', context);
+            return;
           }
       });
     }
@@ -451,11 +458,13 @@ server._setupRoutes = function() {
         if (error || !courseEvent) { res.send(res_404, 404); return; }
         console.log(courseEvent);
         var context = {
-          preTitle: id.toUpperCase() + ' - ' +
-                    type.toUpperCase().charAt(0) +
-                    type.substring(1) + ' ' +
-                    dateFormat(courseEvent.date, 'dd mmm yy'),
-          title: courseEvent.topic? courseEvent.topic : (courseEvent.title? courseEvent.title : ''),
+          preTitle: [
+              id.toUpperCase(), ' - ',
+              type.charAt(0).toUpperCase(), type.slice(1), ' ',
+              dateFormat(courseEvent.date, 'dd mmm yy')
+            ].join(''),
+          title: courseEvent.topic ? courseEvent.topic :
+            (courseEvent.title ? courseEvent.title : ''),
           courseEvent: courseEvent,
           dateFormat: dateFormat
         };
