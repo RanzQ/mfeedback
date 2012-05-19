@@ -44,8 +44,10 @@ server._configure = function() {
 
   app.configure('development', function() {
     var stylusMiddleware = stylus.middleware({
-      src: __dirname + '/stylus/', // .styl files are located in `/stylus`, must match /public folder structure
-      dest: __dirname, // .styl resources are compiled `public/stylesheets/*.css`
+      // .styl files are located in `/stylus`, must match /public folder structure
+      src: __dirname + '/stylus/',
+      // .styl resources are compiled `public/stylesheets/*.css`
+      dest: __dirname,
       debug: true,
       compile: function(str, path) { // optional, but recommended
         return stylus(str)
@@ -93,6 +95,9 @@ server._setupRoutes = function() {
       , db = this.db;
 
 
+    /*
+     * Check for voteId in session or create a new session if one doesn't exist
+     */
     function checkSession(req, res, voteId) {
       var session = req.session;
       if (!session) {
@@ -120,6 +125,10 @@ server._setupRoutes = function() {
       return true;
     }
 
+    /*
+     * Multi purpose feedback function. Used to add pretty much any kind
+     * of feedback to any kind of event.
+     */
     function addFeedback(req, res, eventType, date) {
       var courseId = req.params.id.toLowerCase()
         , feedback = req.body.message
@@ -141,6 +150,8 @@ server._setupRoutes = function() {
         , isVote = (feedback === undefined)
         , voteId = null;
 
+      // If there is a feedbackId, use that.
+      // Otherwise generate something hopefully unique as the ID
       if (feedbackId) {
         voteId = feedbackId;
       } else {
@@ -156,11 +167,7 @@ server._setupRoutes = function() {
 
       db.addFeedback(courseId, eventType, date, fb, function(error, result) {
         if (error || !req.xhr) { res.send(res_404, 404); return; }
-          // If feedback is undefined, this is either an upvote or downvote
-          // so we should respond with json
-
-          
-
+          // If this is a vote, respond with json
           if (isVote) {
             // Save the voteId to session so user can't vote again during
             // this session
@@ -206,7 +213,6 @@ server._setupRoutes = function() {
     /*
      * GET index page.
      */
-
     app.get('/', function(req, res) {
       db.getOrganizations(function(error, organizations) {
         if (error || !organizations) { res.send(res_404, 404); return; } 
@@ -225,7 +231,6 @@ server._setupRoutes = function() {
     /*
      * Logout.
      */
-
     app.get('/logout', function (req, res) {
       req.logout();
       res.redirect('/');
@@ -234,7 +239,6 @@ server._setupRoutes = function() {
     /*
      * Redirect for favicon.
      */
-
     app.get('/favicon.ico', function (req, res) {
       res.redirect('/public/favicon.ico');
     });
@@ -242,7 +246,6 @@ server._setupRoutes = function() {
     /*
      * GET organization page.
      */
-
     app.get('/courses/:id', function(req, res) {
       var id = req.params.id.toLowerCase();
       db.getOrganization(id, function(error, organization) {
@@ -266,7 +269,6 @@ server._setupRoutes = function() {
     /*
      * GET department page.
      */
-
     app.get('/courses/:orgid/:depid', function(req, res) {
       var orgId = req.params.orgid.toLowerCase();
       var depId = req.params.depid.toLowerCase();
@@ -293,7 +295,6 @@ server._setupRoutes = function() {
     /*
      * GET course page.
      */
-
     app.get('/course/:id', function(req, res) {
       var id = req.params.id.toLowerCase();
       var midnight = new Date()
@@ -317,6 +318,9 @@ server._setupRoutes = function() {
       });
     });
 
+    /*
+     * GET more course events
+     */
     app.get('/course/:id/more', function(req, res) {
       var id = req.params.id.toLowerCase()
         , eventType = req.query.t
@@ -328,8 +332,6 @@ server._setupRoutes = function() {
         , title = null;
       twoWeeksAgo.setHours(twoWeeksAgo.getHours() - 14*24, 59, 59);
       var filters = {'date': {'$lt': twoWeeksAgo}};
-
-      
 
       if (eventType === 'lecture') {
         title = function(c) {
@@ -362,11 +364,14 @@ server._setupRoutes = function() {
             , hasMore = 0
             , base_url = ['/course', id, eventType].join('/');
 
+          // If the results return more than what we asked
+          // we can assume there are more results
           if (result.length > perPage) {
             hasMore = 1;
           }
 
-          for (i = 0, j = result.length - hasMore; i < j; i++) {
+          // Loop through the results and build the response data
+          for (var i = 0, j = result.length - hasMore; i < j; i++) {
             c = result[i];
             fl = c.feedbacks ? c.feedbacks.length : 0;
             data.push({
@@ -383,7 +388,6 @@ server._setupRoutes = function() {
     /*
      * GET course feedback page.
      */
-
     app.get('/course/:id/feedback', function(req, res) {
       var id = req.params.id.toLowerCase();
       db.getCourse({'courseId': id}, function(error, course) {
@@ -404,7 +408,6 @@ server._setupRoutes = function() {
     /*
      * POST course feedback.
      */
-
     app.post('/course/:id/feedback', function(req, res) {
       addFeedback(req, res, 'course');
     });
@@ -412,7 +415,6 @@ server._setupRoutes = function() {
     /*
      * GET show course feedback page.
      */
-
     app.get('/course/:id/show_feedback', function(req, res) {
       var id = req.params.id.toLowerCase();
       db.getCourse({'courseId': id, 'populateEvents': true}, function(error, course) {
@@ -433,7 +435,6 @@ server._setupRoutes = function() {
     /*
      * GET event feedback page.
      */
-
     app.get('/course/:id/:type/' +
       ':year([0-9]{4}):month([0-9]{2}):day([0-9]{2})' +
       ':hour([0-9]{2})?:minute([0-9]{2})?', function(req, res) {
@@ -444,43 +445,46 @@ server._setupRoutes = function() {
         , m = req.params.month
         , d = req.params.day
         , h = req.params.hour
-        , min = req.params.minute
-        , date = new Date();
+        , min = req.params.minute;
 
       if (type !== 'lecture' && type !== 'exam' && type !== 'assignment') {
         res.send(res_404, 404); return;
       }
 
+      // Build the date object from request parameters
+      var date = new Date();
       date.setFullYear(y,m-1,d);
-      date.setHours( h? h : 0, min? min : 0, 0, 0);
+      date.setHours( h ? h : 0, min ? min : 0, 0, 0);
 
-      db.getCourseEvent({'courseId': id, 'type': type, 'date':date}, function(error, courseEvent) {
-        if (error || !courseEvent) { res.send(res_404, 404); return; }
-        console.log(courseEvent);
-        var context = {
-          preTitle: [
-              id.toUpperCase(), ' - ',
-              type.charAt(0).toUpperCase(), type.slice(1), ' ',
-              dateFormat(courseEvent.date, 'dd mmm yy')
-            ].join(''),
-          title: courseEvent.topic ? courseEvent.topic :
-            (courseEvent.title ? courseEvent.title : ''),
-          courseEvent: courseEvent,
-          dateFormat: dateFormat
-        };
-        if (req.xhr) {
-          res.partial('partials/event_feedback_page', context);
-        } else {
-          console.log(context);
-          res.render('event_feedback', context);
+      db.getCourseEvent({'courseId': id, 'type': type, 'date':date},
+        function(error, courseEvent) {
+          if (error || !courseEvent) { res.send(res_404, 404); return; }
+          //console.log(courseEvent);
+          var context = {
+            preTitle: [
+                id.toUpperCase(), ' - ',
+                type.charAt(0).toUpperCase(), type.slice(1), ' ',
+                dateFormat(courseEvent.date, 'dd mmm yy')
+              ].join(''),
+            title: courseEvent.topic ? courseEvent.topic :
+              (courseEvent.title ? courseEvent.title : ''),
+            courseEvent: courseEvent,
+            dateFormat: dateFormat
+          };
+          // Check for AJAX
+          if (req.xhr) {
+            res.partial('partials/event_feedback_page', context);
+          } else {
+            console.log(context);
+            res.render('event_feedback', context);
+          }
         }
-      });
+      );
     });
 
     /*
      * POST event feedback, vote, feedback reply or feedback vote.
      */
-
     app.post('/course/:id/:type/' +
       ':year([0-9]{4}):month([0-9]{2}):day([0-9]{2})' +
       ':hour([0-9]{2})?:minute([0-9]{2})?', function(req, res) {
@@ -505,118 +509,27 @@ server._setupRoutes = function() {
 
     });
 
-    /*
-     * GET assignment feedback page.
-     */
-
-    // app.get('/course/:id/assignment/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2}):hour([0-9]{2}):minute([0-9]{2})', function(req, res) {
-    //   var id = req.params.id.toLowerCase()
-    //     , y = req.params.year 
-    //     , m = req.params.month
-    //     , d = req.params.day
-    //     , h = req.params.hour
-    //     , min = req.params.minute
-    //     , date = new Date();
-
-    //   date.setFullYear(y,m-1,d);
-    //   date.setHours(h, min, 0, 0);
-
-    //   db.getAssignment({'courseId': id, 'date': date}, function(error, assignment) {
-    //     if (error || !assignment) { res.send(res_404, 404); return; } 
-
-    //     var context = {
-    //       title: id.toUpperCase() + ' - ' + assignment.title,
-    //       assignment: assignment,
-    //       dateFormat: dateFormat
-    //     };
-    //     if (req.xhr) {
-    //       res.partial('partials/assignment_feedback_page', context);
-    //     } else {
-    //       res.render('assignment_feedback', context);
-    //     }
-    //   });
-    // });
-
-    /*
-     * POST assignment feedback.
-     */
-
-    // app.post('/course/:id/assignment/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2}):hour([0-9]{2}):minute([0-9]{2})', function(req, res) {
-    //   var y = req.params.year 
-    //     , m = req.params.month
-    //     , d = req.params.day
-    //     , h = req.params.hour
-    //     , min = req.params.minute
-    //     , date = new Date();
-
-    //   date.setFullYear(y,m-1,d);
-    //   date.setHours(h, min, 0, 0);
-
-    //   addFeedback(req, res, 'assignments', date);
-    // });
-
-    /*
-     * GET exam feedback page.
-     */
-
-    // app.get('/course/:id/exam/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
-    //   var id = req.params.id.toLowerCase()
-    //     , y = req.params.year 
-    //     , m = req.params.month
-    //     , d = req.params.day
-    //     , date = new Date();
-
-    //   date.setFullYear(y,m-1,d);
-    //   date.setHours(0, 0, 0, 0);
-
-    //   db.getExam({'courseId': id, 'date': date}, function(error, exam) {
-    //     if (error || !exam) { res.send(res_404, 404); return; } 
-
-    //     var context = {
-    //       title: id.toUpperCase() + ' - Exam ' + dateFormat(exam.date, 'dd mmm yy'),
-    //       exam: exam,
-    //       dateFormat: dateFormat
-    //     };
-    //     if (req.xhr) {
-    //       res.partial('partials/exam_feedback_page', context);
-    //     } else {
-    //       res.render('exam_feedback', context);
-    //     }
-    //   });
-    // });
-
-    /*
-     * POST exam feedback.
-     */
-
-    // app.post('/course/:id/exam/:year([0-9]{4}):month([0-9]{2}):day([0-9]{2})', function(req, res) {
-    //   var y = req.params.year 
-    //     , m = req.params.month
-    //     , d = req.params.day
-    //     , date = new Date();
-
-    //   date.setFullYear(y,m-1,d);
-    //   date.setHours(0, 0, 0, 0);
-
-    //   addFeedback(req, res, 'exams', date);
-    // });
-
 
   /*
    * GET course search
    */
-
   app.get('/search', function(req, res) {
     var query = req.query
       , db_query = query;
+    // Delete every key that's not 'q' from the query
     for (var i in query) {
       if (i !== 'q') {
         delete db_query[i];
       }
     }
     db.searchCourses(db_query, function(error, result) {
-      if (error) console.log(error);
-      context = {'title': 'Search results', 'results': result, 'search_term': db_query['q']};
+      if (error) { console.log(error); return; }
+      context = {
+        'title': 'Search results',
+        'results': result,
+        'search_term': db_query.q
+      };
+      // Check for AJAX
       if (req.xhr) {
         res.partial('partials/search_results_page', context);
       } else {
